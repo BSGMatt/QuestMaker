@@ -21,7 +21,9 @@ $VAR_NAME=VALUE
     Examples:
         #INT LOOP_COUNT 10
         !START_LOOP
-            [JUMPIF:END_LOOP]
+            [JUMPIF:$LOOP_COUNT<1,END_LOOP]
+            [DISP_TEXT:"","READY IN $LOOP_COUNT"]
+            $LOOP_COUNT=$LOOP_COUNT-1
             [JUMP:START_LOOP]
         !END_LOOP
             [DISP_TEXT:"","Done!"]
@@ -45,3 +47,5 @@ Labels are defined like this:
     !DOESNT_LIKE_APPLES
         [DISP_TEXT:"JOHN", "Well I don't like you!"]
     [PROMPT:"Do you like apples?","Yes.":[JUMP:LIKES_APPLES],"No.":[JUMP:DOESNT_LIKE_APPLES]]
+
+
