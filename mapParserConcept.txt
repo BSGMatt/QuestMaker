@@ -1,0 +1,47 @@
+Here is a text file for listing any ideas regarding the map parser. 
+
+Variables are initialized like this:
+#VALUE_TYPE[Some Whitespace]VAR_NAME[Some Whitespace Again]VALUE
+    Examples:
+        #INT NUM_ITEMS 4
+        #STR OK_MESSAGE "You got the ok!"
+        #BOOL HAS_OK FALSE
+    Notice that there are different value types. For now, we'll worry about three:
+        Integers: Signified by #INT. Represent integer values
+        Strings: Signified by #STR. Represent string (Notice the quotation marks; they are important to determining what's a string.)
+        Boolean: Signified by #BOOL. Represents boolean values, TRUE or FALSE. 
+Variables are referenced like this:
+$VAR_NAME
+    Example:
+        #STR MYNAME "Dennis"
+        #STR THEIR_NAME "Donny"
+        [DISP_TEXT:"$THEIR_NAME","Hello, $MYNAME"]
+The value of variables can be changed like this:
+$VAR_NAME=VALUE
+    Examples:
+        #INT LOOP_COUNT 10
+        !START_LOOP
+            [JUMPIF:END_LOOP]
+            [JUMP:START_LOOP]
+        !END_LOOP
+            [DISP_TEXT:"","Done!"]
+
+
+Actions are called like this:
+[ACTION_NAME:ARG0,ARG1,ARG2,ARG3,...ARGN]
+    Examples:
+        [DISP_TEXT:SPEAKER_NAME,TEXT]
+        [PROMPT:MESSAGE,OPTION_0:ACTION_0,OPTION_1:ACTION_0,...,OPTION_K:ACTION_K]
+        [JUMP:LABEL]
+        [JUMPIF:CONDITION,LABEL]
+        [STEP:NUM_COMMANDS]
+    These actions are what we will implement for now. 
+
+Labels are defined like this:
+!LABEL_NAME
+    Labels will be used like this:
+    !LIKES_APPLES
+        [DISP_TEXT:"JOHN", "I like apples, too!"]
+    !DOESNT_LIKE_APPLES
+        [DISP_TEXT:"JOHN", "Well I don't like you!"]
+    [PROMPT:"Do you like apples?","Yes.":[JUMP:LIKES_APPLES],"No.":[JUMP:DOESNT_LIKE_APPLES]]
