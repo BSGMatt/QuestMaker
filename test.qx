@@ -9,7 +9,8 @@ str playerName="Johnny";
 
 #TEST_LABEL
     DISP_TEXT("$speakerName", "Hello, $playerName! I'm $speakerName");
-    ARM(ADD, $speakerName, 74);
-    $speakerName = $speakerName + 74;
+    ARM(ADD, $speakerName, $speakerName, 74);
+    $speakerName = $speakerName + 77;
+    $int_test = $int_test -  9990;
 
 int testingone= 10;

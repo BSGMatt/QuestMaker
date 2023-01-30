@@ -63,7 +63,7 @@ str playerName="Johnny";
 
 #TEST_LABEL
     DISP_TEXT("$speakerName", "Hello, $playerName! I'm $speakerName");
-    ARM(ADD, $speakerName, 74);
+    ARM(ADD, $speakerName, $speakerName, 74);
     $speakerName = $speakerName + 74;
 
 int testingone= 10;
@@ -74,5 +74,5 @@ regular function syntax.
 In other words, This:
 $speakerName = $speakerName + 74;
 Will become this:
-ARM(ADD, $speakerName, 74);
+ARM(ADD, $speakerName, $speakerName, 74);
 

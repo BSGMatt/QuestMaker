@@ -1,31 +1,10 @@
 import re
 import sys
-
+from instruction import Variable, Instruction, Label, InvalidLabelError
 #This script handles parsing text that uses the .qx format
 
-class Variable:
-    def __init__(self, name: str, type: str, value):
-        self.name = name;
-        self.type = type;
-        self.value = value;
-
-    def toString(self) -> str:
-        return "[" + self.name + ", " + self.type + ", " + str(self.value) + "]";
-
-class Label:
-    def __init__(self, label: str, address: int):
-        self.label = label;
-        self.address = address;
-    def toString(self) -> str:
-        return "[" + self.label + " @ Address: " + str(self.address) + "]";
-
-class InvalidLabelError(ValueError):
-    def __init__(self, label: str, message: str):
-        self.label = label;
-        self.message = message;
-
 class QXObject:
-    def __init__(self, variables: list[Variable], instructions: list[str], labels: list[Label]):
+    def __init__(self, variables: list[Variable], instructions: list[Instruction], labels: list[Label]):
         self.variables = variables;
         self.instructions = instructions;
         self.labels = labels;
@@ -58,10 +37,14 @@ class QXObject:
             ret += "\t" + l.toString() + "\n";
         ret += "INSTRUCTIONS:\n";
         for i in self.instructions:
-            ret += "\t" + i + "\n";
+            ret += "\t" + i.toString() + "\n";
         
         return ret;
         
+def processInstruction(line: str, address: int) -> Instruction:
+    iName = re.search(r"\S+(?=\()", line).group(0);
+    iArgs = re.split(r"[\(,\);]", line);
+    return Instruction(iName, iArgs[1:-1], address);
 
 #Pre-process phase: Find all of the variables and labels
 def processVariables(file) -> list:
@@ -85,6 +68,26 @@ def processVariables(file) -> list:
         vars.append(Variable(varProperties[1], varProperties[0], value));
     return vars;
 
+def toArmFunction(line: str, address: int) -> Instruction:
+    args = re.split(r"\s*[=+-/*]\s*", line);
+    args[-1] = args[-1][0:-1]; #Remove the ';' mark. 
+
+    l = [];
+    print(args[-1]);
+
+    opName = 'DIV';
+    if (line.find('+') > 0):
+        opName = 'ADD';
+    elif (line.find('-') > 0):
+        opName = 'SUB';
+    elif (line.find('*') > 0):
+        opName = 'MUL';
+    
+    l.append(opName);
+    l.extend(args);
+
+    return Instruction("ARM", l, address);
+
 def createQMLObject(filename) -> QXObject:
     f = open(filename, "r");
     vars = processVariables(f);
@@ -93,22 +96,35 @@ def createQMLObject(filename) -> QXObject:
     lbs = [];
 
     instAddr = 0;
-    regex = r"#\w+|\w+(?=\()\(.*\)";
+    regex = r"(?=\S).*;?";
+    instrRegex = r"\S+(?=\()\(.*\)";
+    labelRegex = r"#\w+"
+    armRegex = r"\$\w+\s*=\s*.*;";
+
     tokens = re.findall(regex, f.read());
     for x in range(0, len(tokens)):
-        instrStr = re.match("\w+(?=\()\(.*\)", tokens[x]);
+        instrStr = re.match(instrRegex, tokens[x]);
         if (instrStr):
-            inst.append(instrStr.group(0));
+            inst.append(processInstruction(instrStr.group(0), instAddr));
             instAddr += 1;
-        elif (x + 1 == len(tokens) or re.match("\w+(?=\()\(.*\)", tokens[x+1]) == None):
-            raise InvalidLabelError(x, "Label not associated with valid instruction.");
-        else:
-            label = re.match("#\w+", tokens[x]);
-            if (label): lbs.append(Label(label.group(0)[1::], instAddr));
+            continue;
+        instrStr = re.match(labelRegex, tokens[x]);
+        if (instrStr):
+            #If the label isn't pointing to an instruction, raise an error.
+            if (x + 1 == len(tokens) or re.match(instrRegex, tokens[x+1]) == None):
+                raise InvalidLabelError(tokens[x], "Label not associated with valid instruction.");
+            else:
+                lbs.append(Label(instrStr.group(0)[1::], instAddr));
+            continue;
+        instrStr = re.match(armRegex, tokens[x]);
+        if (instrStr):
+            inst.append(toArmFunction(tokens[x], instAddr));
+            instAddr += 1;
+        #elif (x + 1 == len(tokens) or re.match("\w+(?=\()\(.*\)", tokens[x+1]) == None):
+            #raise InvalidLabelError(x, "Label not associated with valid instruction.");
+            #continue;
+        #else:
+            #label = re.match("#\w+", tokens[x]);
+            #if (label): lbs.append(Label(label.group(0)[1::], instAddr));
             
     return QXObject(vars, inst, lbs);
-
-
-filename = "test.qx";
-qmlObject = createQMLObject(filename);
-print(qmlObject.toString());
