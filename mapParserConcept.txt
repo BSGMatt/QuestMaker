@@ -49,3 +49,30 @@ Labels are defined like this:
     [PROMPT:"Do you like apples?","Yes.":[JUMP:LIKES_APPLES],"No.":[JUMP:DOESNT_LIKE_APPLES]]
 
 
+Note 1/29/2023:
+I changed the format for the quest language, to look more like standard programming languages like Java or C.
+Example:
+int    int_test = 10;
+str stringTest="This is a string.";
+    bool boolTest=TRUE;
+        int moreTesting=-1;
+
+
+str speakerName="Ronny";
+str playerName="Johnny";
+
+#TEST_LABEL
+    DISP_TEXT("$speakerName", "Hello, $playerName! I'm $speakerName");
+    ARM(ADD, $speakerName, 74);
+    $speakerName = $speakerName + 74;
+
+int testingone= 10;
+
+For arithmitic code like line 67, I plan to have the instruction be interpreted as ARM() function with the 
+regular function syntax.
+
+In other words, This:
+$speakerName = $speakerName + 74;
+Will become this:
+ARM(ADD, $speakerName, 74);
+

@@ -1,6 +1,8 @@
 import re
 import sys
-#This file is for testing the parsing of a qml file
+
+#This script handles parsing text that uses the .qx format
+
 class Variable:
     def __init__(self, name: str, type: str, value):
         self.name = name;
@@ -22,7 +24,7 @@ class InvalidLabelError(ValueError):
         self.label = label;
         self.message = message;
 
-class QMLObject:
+class QXObject:
     def __init__(self, variables: list[Variable], instructions: list[str], labels: list[Label]):
         self.variables = variables;
         self.instructions = instructions;
@@ -63,26 +65,27 @@ class QMLObject:
 
 #Pre-process phase: Find all of the variables and labels
 def processVariables(file) -> list:
-    regex = r"#\S+\s+\S+\s+\"?.+\"?";
+    regex = r"\w+\s+\S+\s*=\s*\"?.+\"?;";
+    
     tokens = re.findall(regex, file.read());
     vars = [];
 
     for s in tokens:
-        varProperties = re.split("\s+", s, maxsplit=2);
+        varProperties = re.split("\s+=?\s*|=", s, maxsplit=2);
         value = None;
-        if (varProperties[0] == "#INT"):
-            value = int(varProperties[2]);
-        elif (varProperties[0] == "#STR"):
-            value = varProperties[2][1:-1];
-        elif (varProperties[0] == "#BOOL"):
-            if (varProperties[2] == "TRUE"):
+        if (varProperties[0] == "int"):
+            value = int(varProperties[2][0:-1]);
+        elif (varProperties[0] == "str"):
+            value = varProperties[2][1:-2];
+        elif (varProperties[0] == "bool"):
+            if (varProperties[2][::-1] == "TRUE"):
                 value = True;
             else:
                 value = False;
-        vars.append(Variable(varProperties[1], varProperties[0][1::], value));
+        vars.append(Variable(varProperties[1], varProperties[0], value));
     return vars;
 
-def createQMLObject(filename) -> QMLObject:
+def createQMLObject(filename) -> QXObject:
     f = open(filename, "r");
     vars = processVariables(f);
     f.seek(0);
@@ -90,21 +93,22 @@ def createQMLObject(filename) -> QMLObject:
     lbs = [];
 
     instAddr = 0;
-    regex = r"(?<!\")![^\s\[\]\"]+|\[.+\]";
+    regex = r"#\w+|\w+(?=\()\(.*\)";
     tokens = re.findall(regex, f.read());
     for x in range(0, len(tokens)):
-        instrStr = re.match("\[.+\]", tokens[x]);
+        instrStr = re.match("\w+(?=\()\(.*\)", tokens[x]);
         if (instrStr):
             inst.append(instrStr.group(0));
             instAddr += 1;
-        elif (x + 1 == len(tokens) or re.match("\[.+\]", tokens[x+1]) == None):
+        elif (x + 1 == len(tokens) or re.match("\w+(?=\()\(.*\)", tokens[x+1]) == None):
             raise InvalidLabelError(x, "Label not associated with valid instruction.");
         else:
-            label = re.match("(?<!\")![^\s\[\]\"]+", tokens[x]);
+            label = re.match("#\w+", tokens[x]);
             if (label): lbs.append(Label(label.group(0)[1::], instAddr));
             
-    return QMLObject(vars, inst, lbs);
+    return QXObject(vars, inst, lbs);
 
 
-qmlObject = createQMLObject(sys.argv[1]);
+filename = "test.qx";
+qmlObject = createQMLObject(filename);
 print(qmlObject.toString());

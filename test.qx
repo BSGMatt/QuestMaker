@@ -1,0 +1,15 @@
+int    int_test = 10;
+str stringTest="This is a string.";
+    bool boolTest=TRUE;
+        int moreTesting=-1;
+
+
+str speakerName="Ronny";
+str playerName="Johnny";
+
+#TEST_LABEL
+    DISP_TEXT("$speakerName", "Hello, $playerName! I'm $speakerName");
+    ARM(ADD, $speakerName, 74);
+    $speakerName = $speakerName + 74;
+
+int testingone= 10;
