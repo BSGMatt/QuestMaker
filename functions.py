@@ -60,14 +60,15 @@ def JUMPIF(qx: QXObject, instr: Instruction):
 def WAIT(qx: QXObject, instr: Instruction):
     numNops = getValueOf(qx, instr.args[0]);
     for i in range(numNops):
-        NOP(qx, instr);
+        qx.instructions.insert(qx.currentAddress + i + 1, Instruction("NOP", [0], qx.currentAddress + i + 1));
     
 def END_WAIT(qx: QXObject, instr: Instruction):
     qx.flags['WAIT'] = False;
 
 def NOP(qx: QXObject, instr: Instruction):
     print("NOP", file=sys.stderr);
-    #qx.instructions.pop(qx.currentAddress - 1);
+    qx.instructions.pop(qx.currentAddress);
+    qx.currentAddress -= 1;
 
 def END(qx: QXObject, instr: Instruction):
     print("End of qx object.");
