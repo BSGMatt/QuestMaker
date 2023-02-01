@@ -12,6 +12,4 @@ for i in obj.instructions:
 
 print("Begin program", file=sys.stderr);
 while (not(obj.flags['END'])):
-    inst = obj.nextInstruction();
-    #print("\tRunning: " + inst.toString());
-    functions.Exec[inst.name](obj, obj.getInstruction(obj.currentAddress));
+    functions.Exec[obj.nextInstruction().name](obj, obj.getInstruction(obj.currentAddress));
