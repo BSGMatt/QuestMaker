@@ -3,7 +3,7 @@ int test = 10;
     JUMPIF(END_LOOP, $test == 0);
     
     $test = $test - 1;
-    $var = 2 + 2;
+    WAIT(1);
 
     JUMP(BEGIN_LOOP);
 #END_LOOP

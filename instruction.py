@@ -6,7 +6,7 @@ class Instruction:
     def toString(self):
         argStr = '';
         for i in self.args[0:-1]:
-            argStr += (i + ", ");
+            argStr += (str(i) + ", ");
         argStr += self.args[-1];
         return "[" + self.name + ": {" + argStr + "} @" + str(self.address) + "]";
 

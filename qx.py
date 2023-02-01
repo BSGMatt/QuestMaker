@@ -5,7 +5,7 @@ from instruction import Variable, Instruction, Label, InvalidLabelError
 
 class QXObject:
     
-    flags = {'END':False};
+    flags = {'END':False, 'WAIT':False};
 
     def __init__(self, variables: list[Variable], instructions: list[Instruction], labels: list[Label]):
         self.variables = variables;

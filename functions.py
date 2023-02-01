@@ -57,8 +57,20 @@ def JUMPIF(qx: QXObject, instr: Instruction):
     if (Compare[instr.args[1]](getValueOf(qx, instr.args[2]), getValueOf(qx, instr.args[3]))):
         JUMP(qx, instr);
 
+def WAIT(qx: QXObject, instr: Instruction):
+    numNops = getValueOf(qx, instr.args[0]);
+    for i in range(numNops):
+        NOP(qx, instr);
+    
+def END_WAIT(qx: QXObject, instr: Instruction):
+    qx.flags['WAIT'] = False;
+
+def NOP(qx: QXObject, instr: Instruction):
+    print("NOP", file=sys.stderr);
+    #qx.instructions.pop(qx.currentAddress - 1);
+
 def END(qx: QXObject, instr: Instruction):
     print("End of qx object.");
     qx.flags['END'] = True;
 
-Exec = {'ARM':ARM, 'END':END, 'JUMP':JUMP, 'JUMPIF':JUMPIF};
+Exec = {'ARM':ARM, 'END':END, 'JUMP':JUMP, 'JUMPIF':JUMPIF, 'WAIT':WAIT, 'NOP':NOP};

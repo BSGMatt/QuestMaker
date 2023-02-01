@@ -70,3 +70,17 @@ Functions:
             Will jump to END_GAME if the value stored at A is less than the value stored in B. 
 
     END:
+        Sets the 'END' flag to true.
+        Usage:
+            END();
+
+    WAIT:
+        Halts the program for a given number of cycles.
+        Usage:
+            WAIT([Cycles]);
+            [Cycles] - The number of cycles to halt the program for. 
+
+    NOP:
+        No operation. 
+        Usage:
+            NOP();
