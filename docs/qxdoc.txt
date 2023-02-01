@@ -12,6 +12,10 @@ Variables:
         str msg = "Monosodium Glutamate.";
         bool amICool = FALSE;
 
+    Once defined, variables can be referenced by typing a '$' sign in
+    front of it, like this:
+        $[varName]
+
 Functions:
     ARM:
         Does basic arithmetic on SrcA and SrcB and stores the result into Dest.
@@ -41,8 +45,28 @@ Functions:
     JUMP:
         Jumps to the given label.
         Usage:
-        JUMP([Label]);
-        Label - The name of the given label. 
+            JUMP([Label]);
+            [Label] - The name of the given label. 
     JUMPIF:
+        Jumps to the given label when the given condition is true.
+        Usage:
+            JUMPIF([Label], [Compare], [ValueA], [ValueB])
+            [Label] - The name of label to jump to.
+            [Compare] - The type of comparision to make.
+            [Compare] can be the following values:
+                EQ - Equal to
+                LT - Less than
+                GT - Greater than
+                LE - Less than or equal to
+                GE - Greater than or equal to
+                NE - Not Equal to 
+        Alternate Usage:
+            JUMPIF([Label], [Comparision]);
+            [Label] - The name of the label to jump to.
+            [Comparision] - The comparision to check, written in the form:
+                [ValueA] [ComparisionSymbol] [ValueB]
+        Example:
+            JUMPIF(END_GAME, LT, $A, $B); OR JUMPIF(END_GAME, $A < $B);
+            Will jump to END_GAME if the value stored at A is less than the value stored in B. 
 
     END:
