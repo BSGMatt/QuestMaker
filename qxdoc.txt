@@ -1,0 +1,48 @@
+This text file is for documenting the the QX language.
+Variables:
+    There are three supported variable types:
+    int - Integers, like 1 or -7
+    str - Strings, like "Hello"
+    bool - Boolean, i.e. TRUE or FALSE
+
+    Variables are defined like this:
+        [varType] [varName] = [value];
+    Examples:
+        int num = 1;
+        str msg = "Monosodium Glutamate.";
+        bool amICool = FALSE;
+
+Functions:
+    ARM:
+        Does basic arithmetic on SrcA and SrcB and stores the result into Dest.
+        Usage: 
+            ARM([Operation], [Dest], [SrcA], [SrcB]);
+            [Operation] The arithmetic operation to perform. 
+            Supported operations include:
+                ADD: Addition
+                SUB: Substraction
+                MUL: Multiplication
+                DIV: Integer Division
+            [Dest] The variable that will be store the result. If the variable has not been previously defined, 
+            then behavior is undefined. 
+            [SrcA] The first operand.
+            [SrcB] The second operand.
+        Alternate Usage:
+            In addtion to the traditional syntax, the ARM function can be called
+            like this:
+            [Dest] = [SrcA] [Operation] [SrcB];
+            Note that [Operation] uses the traditional symbols (i.e, +, -, *) 
+            instead of the string constants like with standard usage.
+        Example:
+            ARM(ADD, $var, 2, 2); OR $var = 2 + 2;
+            Will store the result of 2 + 2 in var. 
+        
+
+    JUMP:
+        Jumps to the given label.
+        Usage:
+        JUMP([Label]);
+        Label - The name of the given label. 
+    JUMPIF:
+
+    END:

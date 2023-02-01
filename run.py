@@ -1,7 +1,8 @@
 import qx
+import sys
 import functions
 
-obj = qx.createQXObject("armTest.qx");
+obj = qx.createQXObject(sys.argv[1]);
 instrIdx = 0;
 #print(obj.toString());
 #Execute every instruction in the object. 

@@ -114,31 +114,33 @@ def createQXObject(filename) -> QXObject:
     instrRegex = r"\S+(?=\()\(.*\)";
     labelRegex = r"#\w+"
     armRegex = r"\$\w+\s*=\s*.*;";
-    compRegex = r"\S+\s*[<>=]+\s*\S+";
+    compRegex = r"\S+\s*[<>=]=\s*\S+";
 
     tokens = re.findall(regex, f.read());
     for x in range(0, len(tokens)):
-        print(tokens[x]);
         instrStr = re.match(armRegex, tokens[x]);
         if (instrStr):
+            #print("\t token being converted to ARM function");
             inst.append(toArmFunction(tokens[x], instAddr));
             instAddr += 1;
             continue;
-        instrStr = re.match(compRegex, tokens[x]);
+        instrStr = re.search(compRegex, tokens[x]);
         if (instrStr):
-            print("TEST");
+            #print("\t token being converted to JUMPIF function");
             inst.append(toJumpIf(tokens[x], instAddr));
             instAddr += 1;
             continue;
         instrStr = re.match(instrRegex, tokens[x]);
         if (instrStr):
+            #print("\t token being converted to standard function");
             inst.append(processInstruction(instrStr.group(0), instAddr));
             instAddr += 1;
             continue;
         instrStr = re.match(labelRegex, tokens[x]);
         if (instrStr):
+            #print("\t token being converted to a label");
             #If the label isn't pointing to an instruction, raise an error.
-            if (x + 1 == len(tokens) or re.match(instrRegex, tokens[x+1]) == None):
+            if (x + 1 == len(tokens) or re.match(labelRegex, tokens[x+1]) != None):
                 raise InvalidLabelError(tokens[x], "Label not associated with valid instruction.");
             else:
                 lbs.append(Label(instrStr.group(0)[1::], instAddr));

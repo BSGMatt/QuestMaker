@@ -46,7 +46,7 @@ def ARM(q: QXObject, instr: Instruction):
         srcB = int(instr.args[3]);
 
     dest.value = opFunc(srcA, srcB);
-    print(dest.toString());
+    print(dest.toString(), file=sys.stderr);
 
 def JUMP(qx: QXObject, instr: Instruction):
     for l in qx.labels:

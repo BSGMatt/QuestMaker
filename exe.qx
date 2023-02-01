@@ -1,0 +1,10 @@
+int test = 10;
+#BEGIN_LOOP
+    JUMPIF(END_LOOP, $test == 0);
+    
+    $test = $test - 1;
+    $var = 2 + 2;
+
+    JUMP(BEGIN_LOOP);
+#END_LOOP
+    END();
