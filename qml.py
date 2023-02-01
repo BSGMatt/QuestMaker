@@ -82,6 +82,8 @@ def processVariables(file) -> list:
         vars.append(Variable(varProperties[1], varProperties[0][1::], value));
     return vars;
 
+
+
 def createQMLObject(filename) -> QMLObject:
     f = open(filename, "r");
     vars = processVariables(f);

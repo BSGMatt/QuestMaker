@@ -1,10 +1,14 @@
 class Instruction:
-    def __init__(self, name: str, args: list, address: int):
+    def __init__(self, name: str, args: list[str], address: int):
         self.name = name;
         self.args = args;
         self.address = address;
     def toString(self):
-        return "[" + self.name + ":(" + str(len(self.args)) + " args) @" + str(self.address) + "]";
+        argStr = '';
+        for i in self.args[0:-1]:
+            argStr += (i + ", ");
+        argStr += self.args[-1];
+        return "[" + self.name + ": {" + argStr + "} @" + str(self.address) + "]";
 
 class Variable:
     def __init__(self, name: str, type: str, value):

@@ -4,22 +4,26 @@ from instruction import Variable, Instruction, Label, InvalidLabelError
 #This script handles parsing text that uses the .qx format
 
 class QXObject:
+    
+    flags = {'END':False};
+
     def __init__(self, variables: list[Variable], instructions: list[Instruction], labels: list[Label]):
         self.variables = variables;
         self.instructions = instructions;
         self.labels = labels;
-        self.currentInstruction = 0;
+
+        self.currentAddress = -1;
 
     #Get the string representing an instruction at the given address.
-    def getInstruction(self, address: int) -> str:
+    def getInstruction(self, address: int) -> Instruction:
         if (address < 0 or address >= len(self.instructions)): 
-            return "";
+            return Instruction("END", [], -1);
         return self.instructions[address];
 
     #Returns the string representing the current instruction, and then increments the instruction pointer. 
     def nextInstruction(self):
-        self.currentInstruction += 1;
-        return self.getInstruction(self.currentInstruction - 1);
+        self.currentAddress += 1;
+        return self.getInstruction(self.currentAddress);
 
     #Jumps to the instruction at the given label. 
     def jump(label: Label):
@@ -43,29 +47,28 @@ class QXObject:
         
 def processInstruction(line: str, address: int) -> Instruction:
     iName = re.search(r"\S+(?=\()", line).group(0);
-    iArgs = re.split(r"[\(,\);]", line);
+    iArgs = re.split(r"\s*[\(,\)]\s*;*", line);
     return Instruction(iName, iArgs[1:-1], address);
 
 #Pre-process phase: Find all of the variables and labels
 def processVariables(file) -> list:
-    regex = r"\w+\s+\S+\s*=\s*\"?.+\"?;";
+    regex = r"\w+\s+\S+\s*(?<![<>=])=\s*\"?.+\"?;";
     
     tokens = re.findall(regex, file.read());
     vars = [];
-
     for s in tokens:
         varProperties = re.split("\s+=?\s*|=", s, maxsplit=2);
         value = None;
         if (varProperties[0] == "int"):
             value = int(varProperties[2][0:-1]);
         elif (varProperties[0] == "str"):
-            value = varProperties[2][1:-2];
+            value = varProperties[2][0:-1];
         elif (varProperties[0] == "bool"):
             if (varProperties[2][::-1] == "TRUE"):
                 value = True;
             else:
                 value = False;
-        vars.append(Variable(varProperties[1], varProperties[0], value));
+        vars.append(Variable(varProperties[1].lstrip(), varProperties[0], value));
     return vars;
 
 def toArmFunction(line: str, address: int) -> Instruction:
@@ -73,7 +76,6 @@ def toArmFunction(line: str, address: int) -> Instruction:
     args[-1] = args[-1][0:-1]; #Remove the ';' mark. 
 
     l = [];
-    print(args[-1]);
 
     opName = 'DIV';
     if (line.find('+') > 0):
@@ -88,7 +90,19 @@ def toArmFunction(line: str, address: int) -> Instruction:
 
     return Instruction("ARM", l, address);
 
-def createQMLObject(filename) -> QXObject:
+def toJumpIf(line: str, address: int) -> Instruction:
+    regex = r"[,\(\s\);]+"
+    lineArgs = re.split(regex, line);
+
+    cCode = {'==':'EQ', '<=':'LE', '>=':'GE', '<':'LT', '>':'GT', '!=':'NE'};
+    args = [];
+    args.append(lineArgs[1]);
+    args.append(cCode[lineArgs[3]]);
+    args.append(lineArgs[2]);
+    args.append(lineArgs[4]);
+    return Instruction(lineArgs[0], args, address);
+
+def createQXObject(filename) -> QXObject:
     f = open(filename, "r");
     vars = processVariables(f);
     f.seek(0);
@@ -100,9 +114,22 @@ def createQMLObject(filename) -> QXObject:
     instrRegex = r"\S+(?=\()\(.*\)";
     labelRegex = r"#\w+"
     armRegex = r"\$\w+\s*=\s*.*;";
+    compRegex = r"\S+\s*[<>=]+\s*\S+";
 
     tokens = re.findall(regex, f.read());
     for x in range(0, len(tokens)):
+        print(tokens[x]);
+        instrStr = re.match(armRegex, tokens[x]);
+        if (instrStr):
+            inst.append(toArmFunction(tokens[x], instAddr));
+            instAddr += 1;
+            continue;
+        instrStr = re.match(compRegex, tokens[x]);
+        if (instrStr):
+            print("TEST");
+            inst.append(toJumpIf(tokens[x], instAddr));
+            instAddr += 1;
+            continue;
         instrStr = re.match(instrRegex, tokens[x]);
         if (instrStr):
             inst.append(processInstruction(instrStr.group(0), instAddr));
@@ -116,15 +143,6 @@ def createQMLObject(filename) -> QXObject:
             else:
                 lbs.append(Label(instrStr.group(0)[1::], instAddr));
             continue;
-        instrStr = re.match(armRegex, tokens[x]);
-        if (instrStr):
-            inst.append(toArmFunction(tokens[x], instAddr));
-            instAddr += 1;
-        #elif (x + 1 == len(tokens) or re.match("\w+(?=\()\(.*\)", tokens[x+1]) == None):
-            #raise InvalidLabelError(x, "Label not associated with valid instruction.");
-            #continue;
-        #else:
-            #label = re.match("#\w+", tokens[x]);
-            #if (label): lbs.append(Label(label.group(0)[1::], instAddr));
+
             
     return QXObject(vars, inst, lbs);

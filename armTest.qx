@@ -1,0 +1,10 @@
+int test = 10;
+ARM(ADD, $test, $test, 5);
+#LABEL1
+    ARM(MUL, $test, $test, 2);
+
+    JUMPIF(LABEL2, $test <= 30);
+    ARM(DIV, $test, $test, 3);
+
+#LABEL2
+    ARM(SUB, $test, $test, 5);
