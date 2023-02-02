@@ -1,9 +1,26 @@
 int test = 10;
+int count = 0;
 #BEGIN_LOOP
     JUMPIF(END_LOOP, $test == 0);
     
+    DISP("I'm adding $test NOPs to this loop!\n");
     $test = $test - 1;
-    WAIT(10);
+    $count = 14;
+
+    PROMPT(in, "Do you like that?\n");
+
+    JUMPIF(NO_RESPONSE, $in == "no");
+    JUMPIF(YES_RESPONSE, $in == "yes");
+    JUMP(CONTINUE_LOOP);
+
+    #NO_RESPONSE
+        DISP("Like I care about your opinion!\n");
+        JUMP(CONTINUE_LOOP);
+    #YES_RESPONSE
+        DISP("Uh... ok then.\n");
+    #CONTINUE_LOOP
+    
+    DISP("The counter is set to $count.");
 
     JUMP(BEGIN_LOOP);
 #END_LOOP

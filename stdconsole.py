@@ -6,15 +6,14 @@ class StandardConsole(console.Console):
 
     def __init__(self):
         self.inStream = sys.stdin;
-        self.outstream = sys.stdout;
+        self.outStream = sys.stdout;
         self.errStream = sys.stderr;
 
     def write(self, errOrOut: int, data: str):
         if (errOrOut == console.ERROR):
-            stream = self.errStream;
+            self.errStream.write(data);
         else:
-            stream = self.outStream;
-        stream.write(data);
+            self.outStream.write(data);
 
     def read(self):
-        self.instream.read();
+        self.inStream.read();

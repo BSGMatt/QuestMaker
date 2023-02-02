@@ -41,6 +41,31 @@ Functions:
             ARM(ADD, $var, 2, 2); OR $var = 2 + 2;
             Will store the result of 2 + 2 in var. 
         
+    DISP:
+        Writes the given text to the output console. 
+        Usage:
+            DISP([TEXT]);
+            [TEXT] - The text to display. 
+        Variables can be embedded into the string using the '$' symbol.
+        Examples:
+            DISP("Hello World!");
+            Will write "Hello World!" to the output console. 
+
+            DISP("You see $NUM doors in front of you. What do you do?");
+            Will write "You see $NUM doors in front of you. What do you do?", but 
+            will replace $NUM with the value store in the variable "NUM". So if the value of 
+            num was 3, then the output would be:
+                "You see 3 doors in front of you. What do you do?"
+
+    PROMPT:
+        Prompts the user for input, and stores that input into the given variable.
+        Usage:
+            PROMPT([VAR], [MESSAGE]);
+            [VAR] - The variable that will store the user input.
+            [MESSAGE] - The message that will display before reading input. 
+
+            if [VAR] does not contain a '$' sign (i.e, is not a reference), then a new variable 
+            will be created. 
 
     JUMP:
         Jumps to the given label.

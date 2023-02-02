@@ -77,6 +77,13 @@ def toArmFunction(line: str, address: int) -> Instruction:
 
     l = [];
 
+    #If the instruction is a variable assignment. 
+    if (len(args) == 2):
+        l.append('ADD');
+        l.extend(args);
+        l.append('0');
+        return Instruction("ARM", l, address);
+
     opName = 'DIV';
     if (line.find('+') > 0):
         opName = 'ADD';

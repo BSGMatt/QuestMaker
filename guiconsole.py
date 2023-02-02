@@ -13,12 +13,13 @@ class GUIConsole(console.Console):
     frame.pack();
 
     textBox = Text(frame);
-    textBox['state'] = 'disabled';
+    textBox['state'] = 'normal';
     textBox['relief'] = 'solid';
     textBox.pack();
 
     entryText = StringVar();
     entry = ttk.Entry(frame, textvariable=entryText);
+    entry.configure(width=120);
     entry.pack();
 
     def __init__(self, windowName: str):
@@ -26,12 +27,14 @@ class GUIConsole(console.Console):
         self.window.title(windowName);
 
     def write(self, errOrOut: int, data: str):
-        return super().write(data);
+        self.textBox['state'] = 'normal';
+        self.textBox.insert('end', data);
+        self.textBox['state'] = 'disabled';
     
     def read(self):
-        pass;
+        inStr = input("");
+        self.write(1, ">>" + inStr + "\n");
+        return inStr;
 
     def run(self):
         self.window.mainloop();
-
-GUIConsole("QXEngine").run();
