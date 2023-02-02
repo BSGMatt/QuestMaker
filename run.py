@@ -1,9 +1,9 @@
 import qx
 import sys
 import functions
+import stdconsole as std;
 
-obj = qx.createQXObject(sys.argv[1]);
-instrIdx = 0;
+qxRunner = QXRunner(qx.createQXObject(sys.argv[1]), std.StandardConsole());
 #print(obj.toString());
 #Execute every instruction in the object.
 print("All instructions:", file=sys.stderr); 
@@ -11,5 +11,5 @@ for i in obj.instructions:
     print("\t" + i.toString(), file=sys.stderr);
 
 print("Begin program", file=sys.stderr);
-while (not(obj.flags['END'])):
-    functions.Exec[obj.nextInstruction().name](obj, obj.getInstruction(obj.currentAddress));
+while (not(qxRunner.qx.flags['END'])):
+    functions.Exec[qxRunner.qx.nextInstruction().name](qxRunner.qx.getInstruction(qxRunner.qx.currentAddress));
