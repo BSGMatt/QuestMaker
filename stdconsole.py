@@ -5,10 +5,9 @@ import sys;
 class StandardConsole(console.Console):
 
     def __init__(self):
-        super().__init__(sys.stdin, sys.stdout, sys.stderr);
-
-    def __init__(self, instream, outStream, errStream):
-        super().__init__(instream, outStream, errStream);
+        self.inStream = sys.stdin;
+        self.outstream = sys.stdout;
+        self.errStream = sys.stderr;
 
     def write(self, errOrOut: int, data: str):
         if (errOrOut == console.ERROR):
