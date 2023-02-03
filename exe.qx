@@ -20,7 +20,7 @@ int count = 0;
         DISP("Uh... ok then.\n");
     #CONTINUE_LOOP
     
-    DISP("The counter is set to $count.");
+    DISP("The counter is set to $count.\n");
 
     JUMP(BEGIN_LOOP);
 #END_LOOP

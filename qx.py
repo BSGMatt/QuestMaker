@@ -47,7 +47,7 @@ class QXObject:
         
 def processInstruction(line: str, address: int) -> Instruction:
     iName = re.search(r"\S+(?=\()", line).group(0);
-    iArgs = re.split(r"\s*[\(,\)]\s*;*", line);
+    iArgs = re.split(r"(?!\B\"[^\"]*)\s*[\(,)]\s*(?![^\"]*\"\B)", line);
     return Instruction(iName, iArgs[1:-1], address);
 
 #Pre-process phase: Find all of the variables and labels

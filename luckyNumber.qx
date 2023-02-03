@@ -1,0 +1,19 @@
+;This program will prompt the user for their lucky number, 
+;and will print their "real" luck number. 
+int real = 0;
+str fake = " ";
+
+PROMPT($fake, "Excuse me, but what is your lucky number?\n");
+
+JUMPRET(CALC_LUCKY_NUM);
+
+DISP("Actually, I think your lucky number is $real.\n");
+END();
+
+
+#CALC_LUCKY_NUM
+    $real = $fake * 7;
+    $real = $real - 2;
+
+    #END_CALC
+    RETURN();

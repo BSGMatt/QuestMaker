@@ -16,6 +16,9 @@ class QXRunner():
         self.qx = qx;
         self.console = console;
 
+        #Define the return address variable. 
+        qx.variables.append(Variable("ra", "int", 0));
+
     def findVariable(self, varName: str) -> Variable:
         for v in self.qx.variables:
             if (("$" + v.name) == varName):
@@ -90,6 +93,13 @@ class QXRunner():
             if (l.label == instr.args[0]):
                 self.qx.currentAddress = l.address - 1;
 
+    def JUMPRET(self, instr: Instruction):
+        self.findVariable("$ra").value = self.qx.currentAddress;
+        self.JUMP(instr);
+
+    def RETURN(self, instr: Instruction):
+        self.qx.currentAddress = self.findVariable("$ra").value;
+
     def JUMPIF(self, instr: Instruction):
         if (Compare[instr.args[1]](self.getValueOf(instr.args[2]), self.getValueOf(instr.args[3]))):
             self.JUMP(instr);
@@ -111,7 +121,9 @@ class QXRunner():
     Exec = {'ARM':ARM, 
             'END':END, 
             'JUMP':JUMP, 
-            'JUMPIF':JUMPIF, 
+            'JUMPIF':JUMPIF,
+            'JUMPRET':JUMPRET,
+            'RETURN':RETURN, 
             'WAIT':WAIT, 
             'NOP':NOP,
             'DISP':DISP,
