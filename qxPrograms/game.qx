@@ -1,0 +1,47 @@
+int ROLE_CIVILIAN = 1;
+int ROLE_DOCTOR = 2;
+int ROLE_HUNTER = 3;
+int ROLE_MERCHANT = 4;
+
+str ROLE_NAME = "Civilian";
+
+#SELECT_ROLE
+    int CURR_ROLE = 0;
+    DISP("Hello, young traveler! What is the role that you seek?\n");
+    PROMPTINT($CURR_ROLE, "1. Civilian\n2. Doctor\n3. Hunter\n4. Merchant\n"); 
+
+    ;Give more verbose descriptions of each after they have selected them. 
+    JUMPIF(DESCRIBE_CIV, $CURR_ROLE == $ROLE_CIVILIAN);
+    JUMPIF(DESCRIBE_DOC, $CURR_ROLE == $ROLE_DOCTOR);
+    JUMPIF(DESCRIBE_HUN, $CURR_ROLE == $ROLE_HUNTER);
+    JUMPIF(DESCRIBE_MER, $CURR_ROLE == $ROLE_MERCHANT);
+
+    ;Restart input prompt for invalid answers.
+    DISP("Please pick one of the four numbers.\n");
+    JUMP(SELECT_ROLE);
+
+#DESCRIBE_CIV
+    DISP("The civilian. Your average joe. not the smartest nor strongest nor craftiest, but one could be more incompetent.\n");
+    $CURR_ROLE = 1;
+    JUMP(FINAL_DECISION);
+#DESCRIBE_DOC
+    DISP("DOCTOR\n");
+    $CURR_ROLE = 2;
+    JUMP(FINAL_DECISION);
+#DESCRIBE_HUN
+    DISP("HUNTER\n");
+    $CURR_ROLE = 3;
+    JUMP(FINAL_DECISION);
+#DESCRIBE_MER
+    DISP("MERCHANT\n");
+    $CURR_ROLE = 4;
+
+#FINAL_DECISION
+    DISP("Are you sure you want this role?\n");
+    PROMPTINT(YES, "1. YES\n2. NO\n");
+    JUMPIF(START_GAME, $YES == 1);
+    JUMPIF(SELECT_ROLE, $YES == 2);
+
+#START_GAME
+    DISP("THE END\n");
+    END();

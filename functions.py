@@ -88,6 +88,23 @@ class QXRunner():
             instr.args[0] = '$' + instr.args[0]; #Add the '$' to let the runner know that the variable has already been created. 
             newVar.value = self.console.read();
 
+    def PROMPTINT(self, instr: Instruction):
+        #Display the prompt message. 
+        self.DISP(Instruction("", [instr.args[1]], 0));
+
+        if (instr.args[0].find('$') == 0):
+            var = self.findVariable(instr.args[0]);
+            if (var.type != "int"):
+                raise TypeError("Expected 'str' but recieved variabled of type: " + var.type);
+            else:
+                var.value = int(self.console.read());
+                return;
+        else:
+            newVar = Variable(instr.args[0], 'int', 0);
+            self.qx.variables.append(newVar);
+            instr.args[0] = '$' + instr.args[0]; #Add the '$' to let the runner know that the variable has already been created. 
+            newVar.value = int(self.console.read());
+
     def JUMP(self, instr: Instruction):
         for l in self.qx.labels:
             if (l.label == instr.args[0]):
@@ -127,4 +144,5 @@ class QXRunner():
             'WAIT':WAIT, 
             'NOP':NOP,
             'DISP':DISP,
-            'PROMPT':PROMPT};
+            'PROMPT':PROMPT,
+            'PROMPTINT':PROMPTINT};

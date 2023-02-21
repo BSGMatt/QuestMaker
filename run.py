@@ -17,6 +17,6 @@ print("Begin program", file=sys.stderr);
 
 while (not(qxRunner.qx.flags['END'])):
     qxRunner.Exec[qxRunner.qx.nextInstruction().name](qxRunner, qxRunner.qx.getInstruction(qxRunner.qx.currentAddress));
-    io.window.update();
+    io.update();
 
 io.run();
