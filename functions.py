@@ -24,13 +24,17 @@ class QXRunner():
     #varName must start with a '$' symbol. 
     def findVariable(self, varName: str) -> Variable:
 
+        print("FINDING VARIABLE: " + varName);
+
         #Remove the '$' sign
         vName = varName[1::];
 
         vfields = vName.split('.');
-        
+
         for v in self.qx.variables:
             if (v.name == vfields[0]):
+                print("V.name: " + v.name);
+                print("V: " + str(v));
                 if (v.isStruct):
                     return v.value.getField('.'.join(vfields[1::]));
                 return v;
@@ -73,10 +77,8 @@ class QXRunner():
         #Find all of the variables embedded into the string.
         data = instr.args[0][1:-1];
         vars = list(re.finditer(varReferenceRegex, data));
-        print(vars);
         esc = re.findall(r"\\.", data);
         for v in vars:
-            print("V: " + v[0]);
             data = data.replace(v[0], str(self.findVariable(v[0]).value));
         for e in esc:
             data = data.replace(e, EscapeChars[e]);
@@ -112,7 +114,7 @@ class QXRunner():
                 var.value = int(self.console.read());
                 return;
         else:
-            newVar = Variable(instr.args[0], 'int', 0);
+            newVar = Variable(instr.args[0], 'int', 0, False);
             self.qx.variables.append(newVar);
             instr.args[0] = '$' + instr.args[0]; #Add the '$' to let the runner know that the variable has already been created. 
             newVar.value = int(self.console.read());

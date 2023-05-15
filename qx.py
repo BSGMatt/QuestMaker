@@ -1,5 +1,6 @@
 import re
 import sys
+import copy
 from instruction import *
 #This script handles parsing text that uses the .qx format
 class QXObject:
@@ -64,21 +65,14 @@ def processStructs(file) -> list:
 
     structs = [];
 
-    print ("Structs found: " + str(len(starts)));
-
     if (len(starts) != len(ends)):
         raise VariableParseError("Failed to parse struct definitions [mismatch start and end lengths]");
 
     for i in range(len(starts)):
 
-        print("Start: " + starts[i][0]);
-        print("Ends: " + ends[i][0]);
-
         #Parse the fields and the name of the struct. 
         varStr = starts[i].string[starts[i].end():ends[i].start()];
         structName = re.match(r"struct\s+(\w+)\s*", starts[i][0])[1];
-
-        print("Inbetween: \n" + varStr);
 
         startIdx = starts[i].end();
         endIdx = ends[i].start();
@@ -88,9 +82,9 @@ def processStructs(file) -> list:
 
         #Parse out each of the struct's fields
         parses = re.findall(variableRegex, varStr);
-        vars = [];
-        varIsStruct = False;
+        vars = []; 
         for p in parses:
+            varIsStruct = False;
             varProperties = re.split(r"\s+=?\s*|=", p, maxsplit=2);
             value = None;
             if (varProperties[0] == "int"):
@@ -111,17 +105,29 @@ def processStructs(file) -> list:
 
 def parseStruct(structList: list[Struct], structName: str, argString: str) -> Struct:
     
+    print("ARGSTRING: " +argString);
+
     splitRegex = r"[,{}];?";
+    parseRegex = r"\"\w*\"|{.*}|\w+";
     assignRegex = r"\w+\s*=\s*\"?.+\"?";
     struct = createStruct(structName, structList);
 
-    #Parse the string into separate args
-    #Removed first and last entries since they're empty.
-    args = re.split(splitRegex, argString)[1:-1];
+    print(struct);
 
+    if (struct == None): return None;
+
+    #Parse the string into separate args
+    #Remove first and last entries since they're empty.
+    argString = argString[1:-1];
+
+    #If there are no args to be parsed, then return the struct as is. 
+    if (argString == ''): return struct;
+    args = re.findall(parseRegex, argString);
+    
     i = 0;
     for a in args:
         arg = a.strip();
+        if (arg == ''): continue;
         #Check if the arg is formatted as 'key = value'
         if (re.match(assignRegex, arg) != None):
             kv = re.split(r"\s*=\s*", arg);
@@ -130,38 +136,45 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
                 if (var.type == "int"):
                     var.value = int(kv[1]);
                 elif(var.type == "str"):
-                    var.value = kv[1];
+                    var.value = str(kv[1]);
                 elif(var.type == "bool"):
                     if (kv[1] == "TRUE"): 
                         var.value = True;
                     else:
                         var.value = False;
+                else:
+                    var.isStruct = True;
+                    var.value = parseStruct(structList, var.type, kv[1]);
         else:
             var = struct.fields[i];
             if (var.type == "int"):
-                var.value = int(kv[1]);
+                var.value = int(arg);
             elif(var.type == "str"):
-                var.value = kv[1];
+                var.value = str(arg);
             elif(var.type == "bool"):
-                if (kv[1] == "TRUE"): 
+                if (arg == "TRUE"): 
                     var.value = True;
                 else:
                     var.value = False;
+            else:
+                var.isStruct = True;
+                var.value = parseStruct(structList, var.type, arg);
     
         i += 1;
+    
+    print(struct);
 
-
-    return;
+    return struct;
 
 #Creates an instance of a struct based on the templates in the given list. 
 def createStruct(name: str, structList: list[Struct]) -> Struct:
 
+    print("structList: " + str(structList));
+
     for s in structList:
         if (s.name == name):
             #Copy the template of the list. 
-            newName = str(s.name);
-            newFields = list(s.fields);
-            return Struct(newName, newFields);
+            return copy.deepcopy(Struct(s.name, s.fields));
 
     return None;
 
@@ -171,8 +184,8 @@ def processVariables(file, structs: list[Struct]) -> list:
     
     tokens = re.findall(regex, file.read());
     vars = [];
-    varIsStruct = False;
     for s in tokens:
+        varIsStruct = False;
         varProperties = re.split(r"\s+=?\s*|=", s, maxsplit=2);
         value = None;
         if (varProperties[0] == "int"):

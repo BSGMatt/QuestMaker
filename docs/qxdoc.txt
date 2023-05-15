@@ -1,9 +1,10 @@
 This text file is for documenting the the QX language.
 Variables:
-    There are three supported variable types:
+    There are four supported variable types:
     int - Integers, like 1 or -7
     str - Strings, like "Hello"
     bool - Boolean, i.e. TRUE or FALSE
+    struct - special types that store multiple values in a single variable. 
 
     Variables are defined like this:
         [varType] [varName] = [value];
@@ -15,6 +16,46 @@ Variables:
     Once defined, variables can be referenced by typing a '$' sign in
     front of it, like this:
         $[varName]
+
+    Structure Types:
+        Structure Types, or simply structs, are a special kind of variable.
+        Rather than having a single value, A struct can hold different variables within it.
+
+        Structs are defined like this:
+
+        struct [name]:
+            [varType1] [varName1];
+            [varType2] [varName2];
+            ...
+        end struct;
+
+        Structs can then be defined like traditional variables, for example:
+
+        role merchant = {};
+        
+        The code above will set 'merchant' to an empty struct of type 'role'.
+        Empty structs will use the default values for integers, strings, and booleans.
+
+        In General, structs can be initialized like this:
+
+            For a structure type defined as this:
+
+            struct [structName]:
+                [varType1] [varName1];
+                [varType2] [varName2];
+                ...
+            end struct;
+
+            A value is initialized like this:
+
+            [structName] [name] = {[varName1] = [value], [varName2] = [value], ...};
+
+            An alternate way of initializing a struct is like this: 
+            [structName] [name] = {[value], [value], ...};
+
+            This will assign the given values based on the order of variables defined within the struct. 
+            So, the first value will be assigned to varName1, the second to varName2, and so on. 
+
 
 Functions:
     ARM:
