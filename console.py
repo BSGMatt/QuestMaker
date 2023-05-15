@@ -21,3 +21,6 @@ class Console:
     #Writes to console. 
     def write(self, errOrOut: int, data: str):
         pass;
+
+    def quit(self):
+        pass;

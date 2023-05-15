@@ -3,12 +3,13 @@ import re
 import sys
 import operator as op
 from console import Console
-from instruction import Instruction, Variable
+from instruction import *
 from qx import QXObject
 
 ArmOperators = {'ADD':op.add, 'SUB':op.sub, 'MUL':op.mul, 'DIV':op.floordiv};
 Compare = {'EQ':op.eq, 'LE':op.le, 'GE':op.ge, 'LT':op.lt, 'GT':op.gt, 'NE':op.ne};
-EscapeChars = {'\\n':'\n', '\\t':'\t', '\\\\':'\\', '\\\"':'\"'};
+EscapeChars = {'\\n':'\n', '\\t':'\t', '\\\\':'\\', '\\\"':'\"', '\\.':'.'};
+varReferenceRegex = r"\$(\w+\.?)+";
 
 class QXRunner():
 
@@ -17,13 +18,22 @@ class QXRunner():
         self.console = console;
 
         #Define the return address variable. 
-        qx.variables.append(Variable("ra", "int", 0));
+        qx.variables.append(Variable("ra", "int", 0, False));
 
+    #Finds a variable that being referenced within the qx script. 
+    #varName must start with a '$' symbol. 
     def findVariable(self, varName: str) -> Variable:
-        for v in self.qx.variables:
-            if (("$" + v.name) == varName):
-                return v;
+
+        #Remove the '$' sign
+        vName = varName[1::];
+
+        vfields = vName.split('.');
         
+        for v in self.qx.variables:
+            if (v.name == vfields[0]):
+                if (v.isStruct):
+                    return v.value.getField('.'.join(vfields[1::]));
+                return v;
         return None;
 
     def getValueOf(self, arg: str):
@@ -62,10 +72,12 @@ class QXRunner():
     def DISP(self, instr: Instruction):
         #Find all of the variables embedded into the string.
         data = instr.args[0][1:-1];
-        vars = re.findall(r"\$\w+", data);
+        vars = list(re.finditer(varReferenceRegex, data));
+        print(vars);
         esc = re.findall(r"\\.", data);
         for v in vars:
-            data = data.replace(v, str(self.findVariable(v).value));
+            print("V: " + v[0]);
+            data = data.replace(v[0], str(self.findVariable(v[0]).value));
         for e in esc:
             data = data.replace(e, EscapeChars[e]);
         self.console.write(1, data);
@@ -78,12 +90,12 @@ class QXRunner():
         if (instr.args[0].find('$') == 0):
             var = self.findVariable(instr.args[0]);
             if (var.type != "str"):
-                raise TypeError("Expected 'str' but recieved variabled of type: " + var.type);
+                raise TypeError("Expected 'str' but recieved variable of type: " + var.type);
             else:
                 var.value = self.console.read();
                 return;
         else:
-            newVar = Variable(instr.args[0], 'str', "");
+            newVar = Variable(instr.args[0], 'str', "", False);
             self.qx.variables.append(newVar);
             instr.args[0] = '$' + instr.args[0]; #Add the '$' to let the runner know that the variable has already been created. 
             newVar.value = self.console.read();
@@ -95,7 +107,7 @@ class QXRunner():
         if (instr.args[0].find('$') == 0):
             var = self.findVariable(instr.args[0]);
             if (var.type != "int"):
-                raise TypeError("Expected 'str' but recieved variabled of type: " + var.type);
+                raise TypeError("Expected 'str' but recieved variable of type: " + var.type);
             else:
                 var.value = int(self.console.read());
                 return;

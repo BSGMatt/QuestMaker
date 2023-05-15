@@ -9,3 +9,10 @@
 
 !TEST_LABEL
     [DISP_TEXT:"$speakerName", "Hello, $playerName! I'm $speakerName"]
+
+
+#CALL_FUNCTION
+    CALL()
+
+    syntax: CALL(label, ret_var)
+

@@ -7,12 +7,15 @@ import re;
 class GUIConsole(console.Console):
 
     text_scroll_speed = 100; #Number of ms between printing words to output. 
+    ready_to_quit = False;
+    
 
     def __init__(self, windowName: str):
         super().__init__();
         self.window = Tk();
         self.window.title(windowName);
         self.window.geometry('640x480');
+        self.window.protocol("WM_DELETE_WINDOW", self.quit);
 
         self.frame = ttk.Frame(self.window, padding=10);
         self.frame['relief'] = 'solid';
@@ -32,11 +35,12 @@ class GUIConsole(console.Console):
         self.entryButtonPressed = StringVar();
         self.entryButton = Button(self.frame, text="Enter", command=lambda: self.entryButtonPressed.set("Confirm"));
         self.entryButton.pack(side="right");
+    
+        
 
     def write(self, errOrOut: int, data: str):
 
         #print(data, file=sys.stderr);
-
         if (errOrOut == 0):
             print(data, file=sys.stderr);
             return;
@@ -71,12 +75,22 @@ class GUIConsole(console.Console):
     
     def read(self):
         self.entryButton.wait_variable(self.entryButtonPressed);
+        self.printInputText();
         inStr = self.entry.get();
-        self.entry.delete('1.0', 'end');
+        self.entry.delete('0', 'end');
         return inStr;
 
     def update(self):
+        self.window.update_idletasks();
         self.window.update();
+        
 
     def run(self):
         self.window.mainloop();
+
+    def quit(self):
+        self.ready_to_quit = True;
+        self.entryButtonPressed.set("Confirm"); #Stop console from waiting for input
+        self.window.destroy();
+
+        

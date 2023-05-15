@@ -1,5 +1,11 @@
 int test = 10;
 int count = 0;
+
+struct test:
+    int more;
+    str less;
+end struct;
+
 #BEGIN_LOOP
     JUMPIF(END_LOOP, $test == 0);
     

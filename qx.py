@@ -1,16 +1,16 @@
 import re
 import sys
-from instruction import Variable, Instruction, Label, InvalidLabelError
+from instruction import *
 #This script handles parsing text that uses the .qx format
-
 class QXObject:
     
     flags = {'END':False, 'WAIT':False};
 
-    def __init__(self, variables: list[Variable], instructions: list[Instruction], labels: list[Label]):
+    def __init__(self, structs: list[Struct], variables: list[Variable], instructions: list[Instruction], labels: list[Label]):
         self.variables = variables;
         self.instructions = instructions;
         self.labels = labels;
+        self.structs = structs;
 
         self.currentAddress = -1;
 
@@ -33,7 +33,10 @@ class QXObject:
         currentInstruction = address;
 
     def toString(self) -> str:
-        ret = "VARIABLES:\n";
+        ret = "STRUCTS:\n";
+        for s in self.structs:
+            ret += "\t" + s.toString() + "\n";
+        ret += "VARIABLES:\n";
         for v in self.variables:
             ret += "\t" + v.toString() + "\n";
         ret += "LABELS:\n";
@@ -50,14 +53,127 @@ def processInstruction(line: str, address: int) -> Instruction:
     iArgs = re.split(r"(?!\B\"[^\"]*)\s*[\(,)]\s*(?![^\"]*\"\B)", line);
     return Instruction(iName, iArgs[1:-1], address);
 
+def processStructs(file) -> list:
+    startStructRegex = r"struct\s+(\w+)\s*";
+    endStructRegex = r"end struct;";
+    variableRegex = r"\w+\s+\w+;";
+
+    starts = list(re.finditer(startStructRegex, file.read()));
+    file.seek(0);
+    ends = list(re.finditer(endStructRegex, file.read()));
+
+    structs = [];
+
+    print ("Structs found: " + str(len(starts)));
+
+    if (len(starts) != len(ends)):
+        raise VariableParseError("Failed to parse struct definitions [mismatch start and end lengths]");
+
+    for i in range(len(starts)):
+
+        print("Start: " + starts[i][0]);
+        print("Ends: " + ends[i][0]);
+
+        #Parse the fields and the name of the struct. 
+        varStr = starts[i].string[starts[i].end():ends[i].start()];
+        structName = re.match(r"struct\s+(\w+)\s*", starts[i][0])[1];
+
+        print("Inbetween: \n" + varStr);
+
+        startIdx = starts[i].end();
+        endIdx = ends[i].start();
+    
+        if (endIdx <= startIdx):
+            raise VariableParseError("Failed to parse struct definitions [expected 'end struct']");
+
+        #Parse out each of the struct's fields
+        parses = re.findall(variableRegex, varStr);
+        vars = [];
+        varIsStruct = False;
+        for p in parses:
+            varProperties = re.split(r"\s+=?\s*|=", p, maxsplit=2);
+            value = None;
+            if (varProperties[0] == "int"):
+                value = 0;
+            elif (varProperties[0] == "str"):
+                value = "";
+            elif (varProperties[0] == "bool"):
+                value = False;
+            else:
+                #Assume variable is a struct. 
+                value = "";
+                varIsStruct = True;
+            vars.append(Variable(varProperties[1].lstrip()[0:-1], varProperties[0], value, varIsStruct));
+        newStruct = Struct(structName, vars);
+        structs.append(newStruct);
+
+    return structs;
+
+def parseStruct(structList: list[Struct], structName: str, argString: str) -> Struct:
+    
+    splitRegex = r"[,{}];?";
+    assignRegex = r"\w+\s*=\s*\"?.+\"?";
+    struct = createStruct(structName, structList);
+
+    #Parse the string into separate args
+    #Removed first and last entries since they're empty.
+    args = re.split(splitRegex, argString)[1:-1];
+
+    i = 0;
+    for a in args:
+        arg = a.strip();
+        #Check if the arg is formatted as 'key = value'
+        if (re.match(assignRegex, arg) != None):
+            kv = re.split(r"\s*=\s*", arg);
+            var = struct.getField(kv[0]);
+            if (var != None):
+                if (var.type == "int"):
+                    var.value = int(kv[1]);
+                elif(var.type == "str"):
+                    var.value = kv[1];
+                elif(var.type == "bool"):
+                    if (kv[1] == "TRUE"): 
+                        var.value = True;
+                    else:
+                        var.value = False;
+        else:
+            var = struct.fields[i];
+            if (var.type == "int"):
+                var.value = int(kv[1]);
+            elif(var.type == "str"):
+                var.value = kv[1];
+            elif(var.type == "bool"):
+                if (kv[1] == "TRUE"): 
+                    var.value = True;
+                else:
+                    var.value = False;
+    
+        i += 1;
+
+
+    return;
+
+#Creates an instance of a struct based on the templates in the given list. 
+def createStruct(name: str, structList: list[Struct]) -> Struct:
+
+    for s in structList:
+        if (s.name == name):
+            #Copy the template of the list. 
+            newName = str(s.name);
+            newFields = list(s.fields);
+            return Struct(newName, newFields);
+
+    return None;
+
 #Pre-process phase: Find all of the variables and labels
-def processVariables(file) -> list:
+def processVariables(file, structs: list[Struct]) -> list:
     regex = r"\w+\s+\S+\s*(?<![<>=])=\s*\"?.+\"?;";
     
     tokens = re.findall(regex, file.read());
     vars = [];
+    varIsStruct = False;
     for s in tokens:
-        varProperties = re.split("\s+=?\s*|=", s, maxsplit=2);
+        varProperties = re.split(r"\s+=?\s*|=", s, maxsplit=2);
         value = None;
         if (varProperties[0] == "int"):
             value = int(varProperties[2][0:-1]);
@@ -68,7 +184,11 @@ def processVariables(file) -> list:
                 value = True;
             else:
                 value = False;
-        vars.append(Variable(varProperties[1].lstrip(), varProperties[0], value));
+        else:
+            #Create a struct object using the given argument string.
+            value = parseStruct(structs, varProperties[0], re.search(r"{.*}", s)[0]);
+            varIsStruct = True;
+        vars.append(Variable(varProperties[1].lstrip(), varProperties[0], value, varIsStruct));
     return vars;
 
 def toArmFunction(line: str, address: int) -> Instruction:
@@ -111,7 +231,9 @@ def toJumpIf(line: str, address: int) -> Instruction:
 
 def createQXObject(filename) -> QXObject:
     f = open(filename, "r");
-    vars = processVariables(f);
+    structs = processStructs(f);    
+    f.seek(0);
+    vars = processVariables(f, structs);
     f.seek(0);
     inst = [];
     lbs = [];
@@ -122,6 +244,7 @@ def createQXObject(filename) -> QXObject:
     labelRegex = r"#\w+"
     armRegex = r"\$\w+\s*=\s*.*;";
     compRegex = r"\S+\s*[<>=]=\s*\S+";
+    
 
     tokens = re.findall(regex, f.read());
     for x in range(0, len(tokens)):
@@ -154,4 +277,4 @@ def createQXObject(filename) -> QXObject:
             continue;
 
             
-    return QXObject(vars, inst, lbs);
+    return QXObject(structs, vars, inst, lbs);

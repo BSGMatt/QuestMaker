@@ -76,3 +76,50 @@ $speakerName = $speakerName + 74;
 Will become this:
 ARM(ADD, $speakerName, $speakerName, 74);
 
+
+Note 5/13/23:
+
+I noticed that any text after a semicolon is ignored, so I'm using semicolons
+as a way to create comments in code. 
+
+Also, I plan on doing something like this for structure types:
+
+#DEF_STRUCTS:
+
+    ;Code below defines a struct
+
+    struct role:
+        str name;
+        int hunt;
+        int endurance;
+        int bargaining;
+    end struct;
+
+
+
+    ;This code defines how a struct would be defined as a variable.
+
+    struct player:
+        string name;
+        role pRole;
+        int hp;
+        int mp;
+        int money;
+    end struct;
+
+    ;Structs would be initialized like this: 
+
+    role commoner = {}; For empty structs;
+
+    ;For initializing specific fields, they can be like this:
+    role merchant = {name = "Merchant", hunt = 25}; 
+
+    ;Otherwise, fields are initialized in the same order that they're defined.
+    role hunter = {"Hunter", 75, 50, 25}; 
+
+    ;The above code is the same as:
+    role hunter = {name = "Hunter", hunt = 75, endurance = 50, bargaining = 25}; 
+    
+
+
+
