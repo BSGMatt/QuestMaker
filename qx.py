@@ -50,8 +50,12 @@ class QXObject:
         return ret;
         
 def processInstruction(line: str, address: int) -> Instruction:
+
+    newArgRegex = r"(?<!\B\b\"[^\"])\s*[\(,)]\s*(?![^\"]*\"\B\b)";
+    oldArgRegex = r"(?!\B\"[^\"]*)\s*[\(,)]\s*(?![^\"]*\"\B)";
+
     iName = re.search(r"\S+(?=\()", line).group(0);
-    iArgs = re.split(r"(?!\B\"[^\"]*)\s*[\(,)]\s*(?![^\"]*\"\B)", line);
+    iArgs = re.split(oldArgRegex, line);
     return Instruction(iName, iArgs[1:-1], address);
 
 def processStructs(file) -> list:
@@ -123,7 +127,7 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
     #If there are no args to be parsed, then return the struct as is. 
     if (argString == ''): return struct;
     args = re.findall(parseRegex, argString);
-    
+
     i = 0;
     for a in args:
         arg = a.strip();
@@ -136,7 +140,7 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
                 if (var.type == "int"):
                     var.value = int(kv[1]);
                 elif(var.type == "str"):
-                    var.value = str(kv[1]);
+                    var.value = str(kv[1])[1:-1];
                 elif(var.type == "bool"):
                     if (kv[1] == "TRUE"): 
                         var.value = True;
@@ -150,7 +154,7 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
             if (var.type == "int"):
                 var.value = int(arg);
             elif(var.type == "str"):
-                var.value = str(arg);
+                var.value = str(arg)[1:-1];
             elif(var.type == "bool"):
                 if (arg == "TRUE"): 
                     var.value = True;
@@ -242,7 +246,7 @@ def toJumpIf(line: str, address: int) -> Instruction:
     args.append(lineArgs[4]);
     return Instruction(lineArgs[0], args, address);
 
-def createQXObject(filename) -> QXObject:
+def createQXObject(filename, addr = 0) -> QXObject:
     f = open(filename, "r");
     structs = processStructs(f);    
     f.seek(0);
@@ -251,7 +255,7 @@ def createQXObject(filename) -> QXObject:
     inst = [];
     lbs = [];
 
-    instAddr = 0;
+    instAddr = addr;
     regex = r"(?=\S).*;?";
     instrRegex = r"\S+(?=\()\(.*\)";
     labelRegex = r"#\w+"

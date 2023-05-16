@@ -16,4 +16,7 @@ class StandardConsole(console.Console):
             self.outStream.write(data);
 
     def read(self):
-        self.inStream.read();
+        return input("");
+
+    def run(self):
+        return;

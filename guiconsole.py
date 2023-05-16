@@ -9,8 +9,9 @@ class GUIConsole(console.Console):
     text_scroll_speed = 100; #Number of ms between printing words to output. 
     ready_to_quit = False;
     
+    oldData = "";
 
-    def __init__(self, windowName: str):
+    def __init__(self, windowName = "QXEngine GUI"):
         super().__init__();
         self.window = Tk();
         self.window.title(windowName);
@@ -40,7 +41,7 @@ class GUIConsole(console.Console):
 
     def write(self, errOrOut: int, data: str):
 
-        #print(data, file=sys.stderr);
+        print(data, file=sys.stderr);
         if (errOrOut == 0):
             print(data, file=sys.stderr);
             return;
@@ -48,10 +49,14 @@ class GUIConsole(console.Console):
         self.textBox['state'] = 'normal';
         #Clear the text box and reinsert text once the text is beyond the box height. 
         self.textBox.insert('end', data);
-        if (int(self.textBox.index('end').split('.')[0]) > self.textBox.cget('height')):
+        #print("END BEFORE: " + self.textBox.index('end'));
+        if (int(self.textBox.index('end').split('.')[0]) >= self.textBox.cget('height')):
             self.textBox.delete('1.0','end');
+            self.textBox.insert('end', self.oldData);
             self.textBox.insert('end', data);
         self.textBox['state'] = 'disabled';
+        #print("END AFTER: " + self.textBox.index('end'));
+        self.oldData = data;
         
         
 
@@ -65,7 +70,7 @@ class GUIConsole(console.Console):
 
         self.textBox['state'] = 'normal';
         #Clear the text box and reinsert text once the text is beyond the box height. 
-        self.textBox.insert('end', words[wordIdx]);
+        self.textBox.insert('end', words[wordIdx] + " ");
         if (int(self.textBox.index('end').split('.')[0]) > self.textBox.cget('height')):
             self.textBox.delete('1.0','end');
             self.textBox.insert('end', words[wordIdx]);
@@ -92,5 +97,8 @@ class GUIConsole(console.Console):
         self.ready_to_quit = True;
         self.entryButtonPressed.set("Confirm"); #Stop console from waiting for input
         self.window.destroy();
+
+    def clear(self):
+        self.textBox.delete('1.0','end');
 
         

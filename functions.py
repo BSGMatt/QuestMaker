@@ -24,7 +24,7 @@ class QXRunner():
     #varName must start with a '$' symbol. 
     def findVariable(self, varName: str) -> Variable:
 
-        print("FINDING VARIABLE: " + varName);
+        #print("FINDING VARIABLE: " + varName);
 
         #Remove the '$' sign
         vName = varName[1::];
@@ -33,10 +33,12 @@ class QXRunner():
 
         for v in self.qx.variables:
             if (v.name == vfields[0]):
-                print("V.name: " + v.name);
-                print("V: " + str(v));
+                #print("V.name: " + v.name);
+                #print("V: " + str(v));
                 if (v.isStruct):
-                    return v.value.getField('.'.join(vfields[1::]));
+                    if (len(vfields) > 1):
+                        return v.value.getField('.'.join(vfields[1::]));
+                    return v;
                 return v;
         return None;
 
@@ -61,17 +63,17 @@ class QXRunner():
             dest = self.findVariable(instr.args[1]);
 
         if (instr.args[2].find('$') >= 0):
-            srcA = int(self.findVariable(instr.args[2]).value);
+            srcA = self.findVariable(instr.args[2]).value;
         else:
-            srcA = int(instr.args[2]);
+            srcA = instr.args[2];
 
         if (instr.args[3].find('$') > 0):
-            srcB = int(self.findVariable(instr.args[3]).value);
+            srcB = self.findVariable(instr.args[3]).value;
         else:
-            srcB = int(instr.args[3]);
+            srcB = instr.args[3];
 
         dest.value = opFunc(srcA, srcB);
-        print(dest.toString(), file=sys.stderr);
+        #print(dest.toString(), file=sys.stderr);
 
     def DISP(self, instr: Instruction):
         #Find all of the variables embedded into the string.
@@ -86,6 +88,7 @@ class QXRunner():
 
     def PROMPT(self, instr: Instruction):
 
+        #print(instr.args);
         #Display the prompt message. 
         self.DISP(Instruction("", [instr.args[1]], 0));
 
@@ -101,8 +104,14 @@ class QXRunner():
             self.qx.variables.append(newVar);
             instr.args[0] = '$' + instr.args[0]; #Add the '$' to let the runner know that the variable has already been created. 
             newVar.value = self.console.read();
+    
+    def PROMPTEMPTY(self, instr: Instruction):
+        self.PROMPT(Instruction("", [instr.args[0], ""], instr.address));
 
     def PROMPTINT(self, instr: Instruction):
+
+        #print(instr.args);
+
         #Display the prompt message. 
         self.DISP(Instruction("", [instr.args[1]], 0));
 
@@ -141,13 +150,16 @@ class QXRunner():
             self.qx.instructions.insert(self.qx.currentAddress + i + 1, Instruction("NOP", [0], self.qx.currentAddress + i + 1));
 
     def NOP(self, instr: Instruction):
-        print("NOP", file=sys.stderr);
+        #print("NOP", file=sys.stderr);
         self.qx.instructions.pop(self.qx.currentAddress);
         self.qx.currentAddress -= 1;
 
     def END(self, instr: Instruction):
-        print("End of qx object.", file=sys.stderr);
+        #print("End of qx object.", file=sys.stderr);
         self.qx.flags['END'] = True;
+    
+    def CLEAR(self, instr: Instruction):
+        self.console.clear();
 
     Exec = {'ARM':ARM, 
             'END':END, 
@@ -159,4 +171,6 @@ class QXRunner():
             'NOP':NOP,
             'DISP':DISP,
             'PROMPT':PROMPT,
-            'PROMPTINT':PROMPTINT};
+            'PROMPTINT':PROMPTINT,
+            'PROMPTEMPTY':PROMPTEMPTY,
+            'CLEAR':CLEAR};

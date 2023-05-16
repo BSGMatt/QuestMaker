@@ -15,6 +15,7 @@ class Console:
     def __init__(self):
         pass;
 
+    #Read input from the console.
     def read(self):
         pass;
     
@@ -22,5 +23,10 @@ class Console:
     def write(self, errOrOut: int, data: str):
         pass;
 
+    #Quit the program
     def quit(self):
+        pass;
+
+    #Clear the screen.
+    def clear(self):
         pass;

@@ -4,8 +4,9 @@ import functions
 import stdconsole as std;
 import guiconsole as gui;
 
+windowName = "QXEngine UI";
 obj = qx.createQXObject(sys.argv[1]);
-io = gui.GUIConsole("QXEngine UI");
+io = gui.GUIConsole();
 qxRunner = functions.QXRunner(obj, io);
 #print(obj.toString(), file=qxRunner.console.outStream);
 #Execute every instruction in the object.

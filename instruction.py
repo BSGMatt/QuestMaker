@@ -27,6 +27,9 @@ class Variable:
     def __str__(self):
         return self.toString();
 
+    def __add__(self, addvalue):
+        return self.value + addvalue;
+
 class Struct:
     def __init__(self, name: str, fields: list[Variable]):
         self.name = name;
@@ -61,6 +64,10 @@ class Struct:
 
     def __str__(self):
         return self.toString();
+
+    #This add override is here so that variable assignments can work.
+    def __add__(self, addvalue):
+        return self;
 
 class Label:
     def __init__(self, label: str, address: int):
