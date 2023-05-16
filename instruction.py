@@ -1,3 +1,4 @@
+import re;
 class Instruction:
     def __init__(self, name: str, args: list[str], address: int):
         self.name = name;
@@ -22,7 +23,7 @@ class Variable:
         self.isStruct = isStruct;
 
     def toString(self) -> str:
-        return "[" + self.name + ", " + self.type + ", " + str(self.value) + "]";
+        return "[" + self.name + ", " + self.type + ", " + str(self.value) + ", " + str(self.isStruct) + "]";
 
     def __str__(self):
         return self.toString();
@@ -42,10 +43,10 @@ class Struct:
         split = name.split('.');
 
         for f in self.fields:
+
+            #In case of array indexing using variables (i.e, a[$b])
             if (f.name == split[0]):
-
                 #print(f);
-
                 if (f.isStruct):
                     if (len(split) == 1):
                         return f;

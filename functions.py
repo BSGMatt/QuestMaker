@@ -9,7 +9,7 @@ from qx import QXObject
 ArmOperators = {'ADD':op.add, 'SUB':op.sub, 'MUL':op.mul, 'DIV':op.floordiv};
 Compare = {'EQ':op.eq, 'LE':op.le, 'GE':op.ge, 'LT':op.lt, 'GT':op.gt, 'NE':op.ne};
 EscapeChars = {'\\n':'\n', '\\t':'\t', '\\\\':'\\', '\\\"':'\"', '\\.':'.'};
-varReferenceRegex = r"\$(\w+\.?)+";
+varReferenceRegex = r"\$\w+\.(?:[\w.]+|\[[^\]]+\])?";
 
 class QXRunner():
 
@@ -17,17 +17,12 @@ class QXRunner():
         self.qx = qx;
         self.console = console;
 
-        #Define the return address variable. 
-        qx.variables.append(Variable("ra", "int", 0, False));
-    
-        #Define a struct for string and integer arrays.
-        
 
     #Finds a variable that being referenced within the qx script. 
     #varName must start with a '$' symbol. 
     def findVariable(self, varName: str) -> Variable:
 
-        #print("FINDING VARIABLE: " + varName);
+        print("FINDING VARIABLE: " + varName);
 
         #Remove the '$' sign
         vName = varName[1::];
@@ -36,10 +31,15 @@ class QXRunner():
 
         for v in self.qx.variables:
             if (v.name == vfields[0]):
-                #print("V.name: " + v.name);
-                #print("V: " + str(v));
+                print("V.name: " + v.name);
+                print("V: " + str(v));
                 if (v.isStruct):
                     if (len(vfields) > 1):
+                        #Array Indexing 
+                        match = re.match(r"\[\$\S+\]", vfields[1]);
+                        if (match != None):
+                            vfields[1] = str(self.findVariable(vfields[1][1:-1]).value);  
+                            vfields[1] = "[" + vfields[1] + "]";                 
                         return v.value.getField('.'.join(vfields[1::]));
                     return v;
                 return v;

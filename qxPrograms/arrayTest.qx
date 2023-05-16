@@ -1,0 +1,9 @@
+;This program tests the built-in arrays.
+
+arr_int a = {1, 2, 3, 4};
+arr_str s = {"apple", "banana", "cherry", "dragonfruit"};
+
+int test = 2;
+
+DISP("This is a[0]: $a.[$test]\n");
+DISP("This is s[0]: $s.[$test]\n");

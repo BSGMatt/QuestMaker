@@ -128,6 +128,8 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
     if (argString == ''): return struct;
     args = re.findall(parseRegex, argString);
 
+    print(args);
+
     i = 0;
     for a in args:
         arg = a.strip();
@@ -151,6 +153,7 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
                     var.value = parseStruct(structList, var.type, kv[1]);
         else:
             var = struct.fields[i];
+            print(var);
             if (var.type == "int"):
                 var.value = int(arg);
             elif(var.type == "str"):
@@ -256,9 +259,25 @@ def toJumpIf(line: str, address: int) -> Instruction:
 
 def createQXObject(filename, addr = 0) -> QXObject:
     f = open(filename, "r");
-    structs = processStructs(f);    
+    structs = processStructs(f); 
+
+    #Define a struct for string and integer arrays.
+    arr = [];
+    for i in range(64):
+        arr.append(Variable("["+str(i)+"]", "int", 0, False));
+    structs.append(Struct("arr_int", arr));
+    
+    arr = [];
+    for i in range(64):
+        arr.append(Variable("["+str(i)+"]", "str", "", False));
+    structs.append(Struct("arr_str", arr));
+
     f.seek(0);
     vars = processVariables(f, structs);
+
+    #Define the return address variable. 
+    vars.append(Variable("ra", "int", 0, False));
+
     f.seek(0);
     inst = [];
     lbs = [];
