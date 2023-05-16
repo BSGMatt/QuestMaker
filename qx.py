@@ -61,7 +61,7 @@ def processInstruction(line: str, address: int) -> Instruction:
 def processStructs(file) -> list:
     startStructRegex = r"struct\s+(\w+)\s*";
     endStructRegex = r"end struct;";
-    variableRegex = r"\w+\s+\w+;";
+    variableRegex = r"\w+\s+\S+;";
 
     starts = list(re.finditer(startStructRegex, file.read()));
     file.seek(0);
@@ -109,14 +109,14 @@ def processStructs(file) -> list:
 
 def parseStruct(structList: list[Struct], structName: str, argString: str) -> Struct:
     
-    print("ARGSTRING: " +argString);
+    #print("ARGSTRING: " +argString);
 
     splitRegex = r"[,{}];?";
     parseRegex = r"\"\w*\"|{.*}|\w+";
     assignRegex = r"\w+\s*=\s*\"?.+\"?";
     struct = createStruct(structName, structList);
 
-    print(struct);
+    #print(struct);
 
     if (struct == None): return None;
 
@@ -166,14 +166,14 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
     
         i += 1;
     
-    print(struct);
+    #print(struct);
 
     return struct;
 
 #Creates an instance of a struct based on the templates in the given list. 
 def createStruct(name: str, structList: list[Struct]) -> Struct:
 
-    print("structList: " + str(structList));
+    #print("structList: " + str(structList));
 
     for s in structList:
         if (s.name == name):
@@ -209,17 +209,25 @@ def processVariables(file, structs: list[Struct]) -> list:
     return vars;
 
 def toArmFunction(line: str, address: int) -> Instruction:
-    args = re.split(r"\s*[=+-/*]\s*", line);
+
+    #print(line);
+
+    equalRegex = r"\B[=+-/*]\B";
+    o = r"\s*[=+-/*]\s*";
+
+    args = re.split(equalRegex, line);
+
+    #Remove any trailing or leading whitespace. 
+    for i in range(len(args)):
+        args[i] = args[i].strip();
+
     args[-1] = args[-1][0:-1]; #Remove the ';' mark. 
 
     l = [];
 
     #If the instruction is a variable assignment. 
     if (len(args) == 2):
-        l.append('ADD');
-        l.extend(args);
-        l.append('0');
-        return Instruction("ARM", l, address);
+        return Instruction("ASSIGN", args, address);
 
     opName = 'DIV';
     if (line.find('+') > 0):
@@ -259,7 +267,7 @@ def createQXObject(filename, addr = 0) -> QXObject:
     regex = r"(?=\S).*;?";
     instrRegex = r"\S+(?=\()\(.*\)";
     labelRegex = r"#\w+"
-    armRegex = r"\$\w+\s*=\s*.*;";
+    armRegex = r"\$\S+\s*=\s*.*;";
     compRegex = r"\S+\s*[<>=]=\s*\S+";
     
 

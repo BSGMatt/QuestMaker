@@ -37,15 +37,14 @@ class Struct:
 
     def getField(self, name: str) -> Variable:
 
-        print("GETTING FIELD OF NAME: " + name);
+        #print("GETTING FIELD OF NAME: " + name);
 
         split = name.split('.');
 
         for f in self.fields:
             if (f.name == split[0]):
 
-                print("F.name: " + f.name);
-                print(f);
+                #print(f);
 
                 if (f.isStruct):
                     if (len(split) == 1):

@@ -121,5 +121,12 @@ Also, I plan on doing something like this for structure types:
     role hunter = {name = "Hunter", hunt = 75, endurance = 50, bargaining = 25}; 
     
 
+struct arr_int:
+    int n;
+    int [0];
+end struct;
+
+struct     
+
 
 

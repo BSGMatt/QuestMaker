@@ -41,7 +41,7 @@ class GUIConsole(console.Console):
 
     def write(self, errOrOut: int, data: str):
 
-        print(data, file=sys.stderr);
+        #print(data, file=sys.stderr);
         if (errOrOut == 0):
             print(data, file=sys.stderr);
             return;

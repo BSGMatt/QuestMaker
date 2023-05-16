@@ -90,4 +90,7 @@ end struct;
     $p.mp = 100;
     $p.money = 100;
 
+    DISP("Current Stats: $p.money");
+
+#AREA_1
     END();

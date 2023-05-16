@@ -19,6 +19,9 @@ class QXRunner():
 
         #Define the return address variable. 
         qx.variables.append(Variable("ra", "int", 0, False));
+    
+        #Define a struct for string and integer arrays.
+        
 
     #Finds a variable that being referenced within the qx script. 
     #varName must start with a '$' symbol. 
@@ -55,6 +58,11 @@ class QXRunner():
             return int(arg);
 
     def ARM(self, instr: Instruction):
+
+        print(instr);
+
+        typeOf = int;
+
         opFunc = ArmOperators[instr.args[0]];
         dest = 0; 
         srcA = 0;
@@ -74,6 +82,17 @@ class QXRunner():
 
         dest.value = opFunc(srcA, srcB);
         #print(dest.toString(), file=sys.stderr);
+
+    def ASSIGN(self, instr: Instruction):
+        if (instr.args[0].find('$') >= 0):
+            dest = self.findVariable(instr.args[0]);
+        if (instr.args[1].find('$') >= 0):
+            srcA = self.findVariable(instr.args[1]).value;
+        else:
+            srcA = instr.args[1];
+    
+        dest.value = srcA;
+        
 
     def DISP(self, instr: Instruction):
         #Find all of the variables embedded into the string.
@@ -173,4 +192,5 @@ class QXRunner():
             'PROMPT':PROMPT,
             'PROMPTINT':PROMPTINT,
             'PROMPTEMPTY':PROMPTEMPTY,
-            'CLEAR':CLEAR};
+            'CLEAR':CLEAR,
+            'ASSIGN':ASSIGN};
