@@ -38,7 +38,7 @@ class Struct:
 
     def getField(self, name: str) -> Variable:
 
-        #print("GETTING FIELD OF NAME: " + name);
+        print("GETTING FIELD OF NAME: " + name);
 
         split = name.split('.');
 
@@ -46,7 +46,7 @@ class Struct:
 
             #In case of array indexing using variables (i.e, a[$b])
             if (f.name == split[0]):
-                #print(f);
+                print(f);
                 if (f.isStruct):
                     if (len(split) == 1):
                         return f;

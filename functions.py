@@ -5,11 +5,12 @@ import operator as op
 from console import Console
 from instruction import *
 from qx import QXObject
+import random
 
 ArmOperators = {'ADD':op.add, 'SUB':op.sub, 'MUL':op.mul, 'DIV':op.floordiv};
 Compare = {'EQ':op.eq, 'LE':op.le, 'GE':op.ge, 'LT':op.lt, 'GT':op.gt, 'NE':op.ne};
 EscapeChars = {'\\n':'\n', '\\t':'\t', '\\\\':'\\', '\\\"':'\"', '\\.':'.'};
-varReferenceRegex = r"\$\w+\.(?:[\w.]+|\[[^\]]+\])?";
+varReferenceRegex = r"\$\w+\.?(?:[\w.]+|\[[^\]]+\])?";
 
 class QXRunner():
 
@@ -31,16 +32,19 @@ class QXRunner():
 
         for v in self.qx.variables:
             if (v.name == vfields[0]):
-                print("V.name: " + v.name);
-                print("V: " + str(v));
+                print("Found V: " + v.name);
                 if (v.isStruct):
+                    print(vfields);
                     if (len(vfields) > 1):
                         #Array Indexing 
-                        match = re.match(r"\[\$\S+\]", vfields[1]);
-                        if (match != None):
-                            vfields[1] = str(self.findVariable(vfields[1][1:-1]).value);  
-                            vfields[1] = "[" + vfields[1] + "]";                 
-                        return v.value.getField('.'.join(vfields[1::]));
+                        for i in range(1, len(vfields)):
+                            match = re.match(r"\[\$\S+\]", vfields[i]);
+                            if (match != None):
+                                vfields[i] = str(self.findVariable(vfields[1][1:-1]).value);  
+                                vfields[i] = "[" + vfields[i] + "]"; 
+                        remain = '.'.join(vfields[1::]);
+                        #print("Remaining var: " + remain);
+                        return v.value.getField(remain);
                     return v;
                 return v;
         return None;
@@ -58,8 +62,6 @@ class QXRunner():
             return int(arg);
 
     def ARM(self, instr: Instruction):
-
-        print(instr);
 
         typeOf = int;
 
@@ -89,9 +91,37 @@ class QXRunner():
         if (instr.args[1].find('$') >= 0):
             srcA = self.findVariable(instr.args[1]).value;
         else:
-            srcA = instr.args[1];
+            if (dest.type == 'str'):
+                val = instr.args[1][1:-1];
+            else:
+                val = int(instr.args[1]);
+            srcA = val;
     
         dest.value = srcA;
+    
+    def RAND(self, instr: Instruction):
+
+        #Check if the client code is referencing an already created variable. 
+        #If not, create one. 
+
+        if (instr.args[0].find('$') >= 0):
+            dest = self.findVariable(instr.args[0]);
+        else:
+            dest = Variable(instr.args[0], 'int', 0, False);
+            self.qx.variables.append(dest);
+        
+        if (instr.args[1].find('$') >= 0):
+            min = self.findVariable(instr.args[1]).value;
+        else:
+            min = int(instr.args[1]);
+        if (instr.args[2].find('$') >= 0):
+            max = self.findVariable(instr.args[2]).value;
+        else:
+            max = int(instr.args[2]);
+        
+        dest.value = random.randint(min, max);
+        
+        return;
         
 
     def DISP(self, instr: Instruction):
@@ -100,7 +130,7 @@ class QXRunner():
         vars = list(re.finditer(varReferenceRegex, data));
         esc = re.findall(r"\\.", data);
         for v in vars:
-            data = data.replace(v[0], str(self.findVariable(v[0]).value));
+            data = data.replace(v[0], str(self.findVariable(v[0]).value), 1);
         for e in esc:
             data = data.replace(e, EscapeChars[e]);
         self.console.write(1, data);
@@ -174,7 +204,7 @@ class QXRunner():
         self.qx.currentAddress -= 1;
 
     def END(self, instr: Instruction):
-        #print("End of qx object.", file=sys.stderr);
+        print("End of qx object.", file=sys.stderr);
         self.qx.flags['END'] = True;
     
     def CLEAR(self, instr: Instruction):
@@ -193,4 +223,5 @@ class QXRunner():
             'PROMPTINT':PROMPTINT,
             'PROMPTEMPTY':PROMPTEMPTY,
             'CLEAR':CLEAR,
-            'ASSIGN':ASSIGN};
+            'ASSIGN':ASSIGN,
+            'RAND':RAND};

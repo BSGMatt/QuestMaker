@@ -5,5 +5,28 @@ arr_str s = {"apple", "banana", "cherry", "dragonfruit"};
 
 int test = 2;
 
-DISP("This is a[0]: $a.[$test]\n");
-DISP("This is s[0]: $s.[$test]\n");
+DISP("This is a[$test]: $a.[$test]\n");
+DISP("This is s[$test]: $s.[$test]\n");
+
+;Testing changes to specifc values:
+
+$a.[$test] = 7;
+$s.[$test] = "grape";
+
+DISP("This is a[$test]: $a.[$test]\n");
+DISP("This is s[$test]: $s.[$test]\n");
+
+
+;Test structs initialization within structs.
+
+struct vector3;
+    int x;
+    int y;
+    int z;
+end struct;
+
+struct matrix3x3;
+    vector3 row1;
+    vector3 row2;
+    vector3 row3; 
+end struct;

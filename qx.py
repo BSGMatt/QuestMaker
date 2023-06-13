@@ -128,7 +128,7 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
     if (argString == ''): return struct;
     args = re.findall(parseRegex, argString);
 
-    print(args);
+    #print(args);
 
     i = 0;
     for a in args:
@@ -153,7 +153,7 @@ def parseStruct(structList: list[Struct], structName: str, argString: str) -> St
                     var.value = parseStruct(structList, var.type, kv[1]);
         else:
             var = struct.fields[i];
-            print(var);
+            #print(var);
             if (var.type == "int"):
                 var.value = int(arg);
             elif(var.type == "str"):
