@@ -5,6 +5,10 @@ int ROLE_MERCHANT = 4;
 
 str ROLE_NAME = "Civilian";
 
+struct player
+
+end struct;
+
 #SELECT_ROLE
     int CURR_ROLE = 0;
     DISP("Hello, young traveler! What is the role that you seek?\n");
@@ -43,5 +47,5 @@ str ROLE_NAME = "Civilian";
     JUMPIF(SELECT_ROLE, $YES == 2);
 
 #START_GAME
-    DISP("THE END\n");
+    DISP("Hello, \n");
     END();

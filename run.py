@@ -5,6 +5,12 @@ import stdconsole as std;
 import guiconsole as gui;
 
 windowName = "QXEngine UI";
+
+#Check if a file is given as an argument.
+if (len(sys.argv) != 2):
+    print("Proper usage: run.py [qxFileName]");
+    exit();
+
 obj = qx.createQXObject(sys.argv[1]);
 io = gui.GUIConsole();
 qxRunner = functions.QXRunner(obj, io);

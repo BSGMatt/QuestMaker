@@ -23,7 +23,7 @@ Variables:
 
         Structs are defined like this:
 
-        struct [name]:
+        struct [name]
             [varType1] [varName1];
             [varType2] [varName2];
             ...

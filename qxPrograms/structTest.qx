@@ -25,7 +25,7 @@ end struct;
     int curr_role = 0;
     role player_role = {};
     DISP("Hello, young traveler! What is the role that you seek?\n");
-    PROMPTINT($curr_role, "1. Civilian\n2. Doctor\n3. Hunter\n4. Merchant\n"); 
+    PROMPTINT($curr_role, "1. Civilian\n2. Doctor\n3. Hunter\n4. Merchant\n")W; 
 
     ;Give more verbose descriptions of each after the player has selected one. 
 
@@ -90,7 +90,6 @@ end struct;
     $p.mp = 100;
     $p.money = 100;
 
-    DISP("Current Stats: $p.money");
-
 #AREA_1
+    DISP("First thing we need to do");
     END();
