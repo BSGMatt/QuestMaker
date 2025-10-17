@@ -7,7 +7,7 @@ class QXObject:
     
     flags = {'END':False, 'WAIT':False};
 
-    def __init__(self, structs: list[Struct], variables: list[Variable], instructions: list[Instruction], labels: list[Label]):
+    def __init__(self, structs: list[Struct], variables: dict, instructions: list[Instruction], labels: list[Label]):
         self.variables = variables;
         self.instructions = instructions;
         self.labels = labels;
@@ -38,7 +38,7 @@ class QXObject:
         for s in self.structs:
             ret += "\t" + s.toString() + "\n";
         ret += "VARIABLES:\n";
-        for v in self.variables:
+        for v in self.variables.values():
             ret += "\t" + v.toString() + "\n";
         ret += "LABELS:\n";
         for l in self.labels:
@@ -186,11 +186,11 @@ def createStruct(name: str, structList: list[Struct]) -> Struct:
     return None;
 
 #Pre-process phase: Find all of the variables and labels
-def processVariables(file, structs: list[Struct]) -> list:
+def processVariables(file, structs: list[Struct]) -> dict:
     regex = r"\w+\s+\S+\s*(?<![<>=])=\s*\"?.+\"?;";
     
     tokens = re.findall(regex, file.read());
-    vars = [];
+    vars = {};
     for s in tokens:
         varIsStruct = False;
         varProperties = re.split(r"\s+=?\s*|=", s, maxsplit=2);
@@ -208,7 +208,8 @@ def processVariables(file, structs: list[Struct]) -> list:
             #Create a struct object using the given argument string.
             value = parseStruct(structs, varProperties[0], re.search(r"{.*}", s)[0]);
             varIsStruct = True;
-        vars.append(Variable(varProperties[1].lstrip(), varProperties[0], value, varIsStruct));
+        varName = varProperties[1].lstrip();
+        vars[varName] = Variable(varName, varProperties[0], value, varIsStruct);
     return vars;
 
 def toArmFunction(line: str, address: int) -> Instruction:
@@ -276,7 +277,7 @@ def createQXObject(filename, addr = 0) -> QXObject:
     vars = processVariables(f, structs);
 
     #Define the return address variable. 
-    vars.append(Variable("ra", "int", 0, False));
+    vars["ra"] = Variable("ra", "int", 0, False);
 
     f.seek(0);
     inst = [];

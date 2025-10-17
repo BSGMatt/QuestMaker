@@ -14,7 +14,7 @@ if (len(sys.argv) != 2):
 obj = qx.createQXObject(sys.argv[1]);
 io = gui.GUIConsole();
 qxRunner = functions.QXRunner(obj, io);
-#print(obj.toString(), file=qxRunner.console.outStream);
+print(obj.toString(), file=qxRunner.console.outStream);
 #Execute every instruction in the object.
 print("All instructions:", file=sys.stderr); 
 for i in qxRunner.qx.instructions:
@@ -22,7 +22,7 @@ for i in qxRunner.qx.instructions:
 
 print("Begin program", file=sys.stderr);
 while (not(qxRunner.qx.flags['END'])):
-    qxRunner.Exec[qxRunner.qx.nextInstruction().name](qxRunner, qxRunner.qx.getInstruction(qxRunner.qx.currentAddress));
+    qxRunner.Execute(qxRunner.qx.nextInstruction().name, qxRunner.qx.getInstruction(qxRunner.qx.currentAddress));
     #io.update();
 
 

@@ -9,7 +9,7 @@ end struct;
 #BEGIN_LOOP
     JUMPIF(END_LOOP, $test == 0);
     
-    DISP("I'm adding $test NOPs to this loop!\n");
+    DISP("I'm adding ${test} NOPs to this loop!\n");
     $test = $test - 1;
     $count = 14;
 
@@ -26,7 +26,7 @@ end struct;
         DISP("Uh... ok then.\n");
     #CONTINUE_LOOP
     
-    DISP("The counter is set to $count.\n");
+    DISP("The counter is set to ${count}.\n");
 
     JUMP(BEGIN_LOOP);
 #END_LOOP

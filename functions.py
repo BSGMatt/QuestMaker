@@ -11,6 +11,7 @@ ArmOperators = {'ADD':op.add, 'SUB':op.sub, 'MUL':op.mul, 'DIV':op.floordiv};
 Compare = {'EQ':op.eq, 'LE':op.le, 'GE':op.ge, 'LT':op.lt, 'GT':op.gt, 'NE':op.ne};
 EscapeChars = {'\\n':'\n', '\\t':'\t', '\\\\':'\\', '\\\"':'\"', '\\.':'.'};
 varReferenceRegex = r"\$\w+\.?(?:[\w.]+|\[[^\]]+\])?";
+inlineStringParseRegex = r"\$\{([^}]+)\}";
 
 class QXRunner():
 
@@ -22,35 +23,28 @@ class QXRunner():
     #Finds a variable that being referenced within the qx script. 
     #varName must start with a '$' symbol. 
     def findVariable(self, varName: str) -> Variable:
-
         print("FINDING VARIABLE: " + varName);
 
         #Remove the '$' sign
         vName = varName[1::];
 
-        vfields = vName.split('.');
+        if (vName in self.qx.variables.keys()):
+            return self.qx.variables[vName]
 
-        for v in self.qx.variables:
-            if (v.name == vfields[0]):
-                print("Found V: " + v.name);
-                if (v.isStruct):
-                    print(vfields);
-                    if (len(vfields) > 1):
-                        #Array Indexing 
-                        for i in range(1, len(vfields)):
-                            match = re.match(r"\[\$\S+\]", vfields[i]);
-                            if (match != None):
-                                vfields[i] = str(self.findVariable(vfields[1][1:-1]).value);  
-                                vfields[i] = "[" + vfields[i] + "]"; 
-                        remain = '.'.join(vfields[1::]);
-                        #print("Remaining var: " + remain);
-                        return v.value.getField(remain);
-                    return v;
-                return v;
+        try:
+            val = self.qx.variables[vName]
+        except (AttributeError, KeyError, TypeError) as e:
+            self.ThrowError(self.currentInstruction(), e)
+
         return None;
 
+    def currentInstruction(self) -> Instruction:
+        return self.qx.instructions[self.qx.currentAddress];
+
     def getValueOf(self, arg: str):
-        if (arg.find('$') == 0):
+        if (arg in self.qx.variables.keys()):
+            return self.qx.variables[arg].value;
+        elif (arg.find('$') == 0):
             return self.findVariable(arg).value;
         elif (arg.find('\"') == 0):
             return str(arg)[1:-1];
@@ -59,7 +53,7 @@ class QXRunner():
         elif (arg == 'FALSE'):
             return False;
         else:
-            return int(arg);
+            return float(arg);
 
     def ARM(self, instr: Instruction):
 
@@ -71,18 +65,14 @@ class QXRunner():
         srcB = 0;
         if (instr.args[1].find('$') >= 0):
             dest = self.findVariable(instr.args[1]);
+        
+        srcA = self.getValueOf(instr.args[2]);
+        srcB = self.getValueOf(instr.args[3]);
 
-        if (instr.args[2].find('$') >= 0):
-            srcA = self.findVariable(instr.args[2]).value;
-        else:
-            srcA = instr.args[2];
-
-        if (instr.args[3].find('$') > 0):
-            srcB = self.findVariable(instr.args[3]).value;
-        else:
-            srcB = instr.args[3];
-
-        dest.value = opFunc(srcA, srcB);
+        try:
+            dest.value = opFunc(srcA, srcB);
+        except TypeError as t:
+            self.ThrowError(instr, t);
         #print(dest.toString(), file=sys.stderr);
 
     def ASSIGN(self, instr: Instruction):
@@ -127,10 +117,10 @@ class QXRunner():
     def DISP(self, instr: Instruction):
         #Find all of the variables embedded into the string.
         data = instr.args[0][1:-1];
-        vars = list(re.finditer(varReferenceRegex, data));
+        vars = list(re.finditer(inlineStringParseRegex, data));
         esc = re.findall(r"\\.", data);
         for v in vars:
-            data = data.replace(v[0], str(self.findVariable(v[0]).value), 1);
+            data = data.replace(v[0], str(self.getValueOf(v[1])), 1);
         for e in esc:
             data = data.replace(e, EscapeChars[e]);
         self.console.write(1, data);
@@ -150,7 +140,7 @@ class QXRunner():
                 return;
         else:
             newVar = Variable(instr.args[0], 'str', "", False);
-            self.qx.variables.append(newVar);
+            self.qx.variables[newVar.name] = newVar;
             instr.args[0] = '$' + instr.args[0]; #Add the '$' to let the runner know that the variable has already been created. 
             newVar.value = self.console.read();
     
@@ -207,8 +197,20 @@ class QXRunner():
         print("End of qx object.", file=sys.stderr);
         self.qx.flags['END'] = True;
     
+    def ThrowError(self, instr: Instruction, e):
+        print("Instruction Failed!");
+        print("Instruction: ", instr, e);
+        self.END(instr);
+    
     def CLEAR(self, instr: Instruction):
         self.console.clear();
+    
+    def Execute(self, instrName : str, instr: Instruction):
+        if (instrName in self.Exec):
+            self.Exec[instrName](self, instr);
+        else:
+            print("Could not find instruction: ", instrName);
+            self.END(instr);
 
     Exec = {'ARM':ARM, 
             'END':END, 
